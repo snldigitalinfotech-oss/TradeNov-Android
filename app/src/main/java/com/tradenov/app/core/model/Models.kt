@@ -103,6 +103,27 @@ data class Tip(
         get() = if (capturedEntryPrice > 0) {
             (liveProfitLoss / capturedEntryPrice) * 100
         } else 0.0
+
+    val profitLossRupees: Double
+        get() {
+            val pts = liveProfitLoss
+            val multiplier = when (marketSegment) {
+                MarketSegment.OPTIONS -> 50.0
+                MarketSegment.FUTURES -> 25.0
+                MarketSegment.COMMODITY -> 10.0
+                else -> if (capturedEntryPrice < 500) 50.0 else 10.0
+            }
+            return pts * multiplier
+        }
+
+    val displayProfitLossText: String
+        get() {
+            val prefix = if (profitLossRupees >= 0) "+₹" else "-₹"
+            val absAmt = Math.abs(profitLossRupees)
+            val pct = liveProfitLossPercent
+            val pctPrefix = if (pct >= 0) "+" else ""
+            return "${prefix}${String.format("%,.0f", absAmt)} (${pctPrefix}${String.format("%.1f", pct)}%)"
+        }
 }
 
 data class SubscriptionPlan(

@@ -512,7 +512,20 @@ fun TipListingCard(
                 }
             }
 
-            StatusBadge(status = tip.status.name)
+            Column(horizontalAlignment = Alignment.End) {
+                StatusBadge(status = tip.status.name)
+                if (tip.status == TipStatus.TARGET_HIT || tip.liveProfitLoss != 0.0) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = tip.displayProfitLossText,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            color = if (tip.profitLossRupees >= 0) ProfitGreen else LossRed,
+                            fontSize = 11.sp
+                        )
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(14.dp))
