@@ -318,6 +318,53 @@ fun AddTipScreen(
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+
+            // Technical Chart Image Attachment Section
+            item {
+                var isChartAttached by remember { mutableStateOf(true) }
+
+                Surface(
+                    shape = CardShape,
+                    color = if (isChartAttached) OrangeLight else MaterialTheme.colorScheme.surface,
+                    border = CardDefaults.outlinedCardBorder().copy(
+                        brush = androidx.compose.ui.graphics.SolidColor(
+                            if (isChartAttached) OrangePrimary else MaterialTheme.colorScheme.outline
+                        )
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(CardShape)
+                        .clickable { isChartAttached = !isChartAttached }
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (isChartAttached) Icons.Default.CheckCircle else Icons.Default.AddPhotoAlternate,
+                                contentDescription = null,
+                                tint = OrangePrimary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (isChartAttached) "Technical Chart Attached (analysis_chart.png)" else "Attach Technical Chart Image",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (isChartAttached) "Tap to change attached screenshot" else "Upload TradingView candlestick chart or breakout pattern",
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(24.dp))
             }
 

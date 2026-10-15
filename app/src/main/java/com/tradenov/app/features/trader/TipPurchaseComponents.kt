@@ -22,8 +22,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tradenov.app.core.designsystem.*
+import com.tradenov.app.core.model.Expert
 import com.tradenov.app.core.model.SubscriptionPlan
 import com.tradenov.app.core.model.Tip
+import com.tradenov.app.core.model.TipStatus
 import com.tradenov.app.core.model.TradeAction
 
 @Composable
@@ -814,4 +816,306 @@ fun SubscriptionSuccessDialog(
         }
     )
 }
+
+@Composable
+fun TipListingCard(
+    tip: Tip,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    TradeNovCard(
+        modifier = modifier.clickable { onClick() },
+        elevation = 2.dp
+    ) {
+        // Header Row: Symbol, Market Tag, Status Badge
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (tip.isUnlocked) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(if (tip.action == TradeAction.BUY) ProfitGreenLight else LossRedLight),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (tip.action == TradeAction.BUY) "B" else "S",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                color = if (tip.action == TradeAction.BUY) ProfitGreen else LossRed
+                            )
+                        )
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(OrangeLight),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Locked Setup",
+                            tint = OrangePrimary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = tip.symbol,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Text(
+                        text = "${tip.marketSegment.displayName} • ${if (tip.isUnlocked) tip.tradeType.name else "PREMIUM SETUP"}",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 11.sp
+                        )
+                    )
+                }
+            }
+
+            Column(horizontalAlignment = Alignment.End) {
+                if (tip.isUnlocked) {
+                    StatusBadge(status = tip.status.name)
+                    if (tip.status == TipStatus.TARGET_HIT || tip.liveProfitLoss != 0.0) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = tip.displayProfitLossText,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                color = if (tip.profitLossRupees >= 0) ProfitGreen else LossRed,
+                                fontSize = 11.sp
+                            )
+                        )
+                    }
+                } else {
+                    Surface(
+                        shape = PillShape,
+                        color = OrangeLight,
+                        border = CardDefaults.outlinedCardBorder()
+                    ) {
+                        Text(
+                            text = "PREMIUM",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = OrangePrimary,
+                                fontSize = 10.sp
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Price & Targets Info (Locked or Unlocked)
+        if (tip.isUnlocked) {
+            // Unlocked details
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(InputShape)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text("Entry Price", style = MaterialTheme.typography.labelSmall.copy(color = LightTextMuted))
+                    Text("₹${tip.capturedEntryPrice}", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                }
+                Column {
+                    Text("Target 1", style = MaterialTheme.typography.labelSmall.copy(color = LightTextMuted))
+                    Text("₹${tip.target1}", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = ProfitGreen))
+                }
+                Column {
+                    Text("Stop Loss", style = MaterialTheme.typography.labelSmall.copy(color = LightTextMuted))
+                    Text("₹${tip.stopLoss}", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = LossRed))
+                }
+            }
+        } else {
+            // Locked details preview (Fully masked matching requirements)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(InputShape)
+                    .background(OrangeLight.copy(alpha = 0.5f))
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = OrangePrimary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Entry, Targets & Stop Loss Masked",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = OrangePrimary
+                            )
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Entry: ₹••••  |  Target: ₹••••  |  SL: ₹••••",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                }
+
+                Surface(
+                    shape = PillShape,
+                    color = OrangePrimary
+                ) {
+                    Text(
+                        text = "Unlock • ₹${tip.basePrice.toInt()}",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        ),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Footer: Expert name, rating, published time
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = OrangePrimary,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = tip.expertName,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            }
+
+            Text(
+                text = tip.createdAt,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = LightTextMuted,
+                    fontSize = 11.sp
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun ExpertCompactCard(
+    expert: Expert,
+    onClick: () -> Unit,
+    onToggleFollow: () -> Unit
+) {
+    Surface(
+        shape = CardShape,
+        color = MaterialTheme.colorScheme.surface,
+        border = CardDefaults.outlinedCardBorder(),
+        modifier = Modifier
+            .width(220.dp)
+            .clickable { onClick() }
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(OrangeLight),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = expert.name.take(1),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = OrangePrimary
+                        )
+                    )
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = expert.name,
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = "${expert.experienceYears}+ Yrs Exp",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 11.sp
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text("Win Rate", style = MaterialTheme.typography.labelSmall.copy(color = LightTextMuted))
+                    Text("${expert.winRate}%", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = ProfitGreen))
+                }
+                Column {
+                    Text("Total Tips", style = MaterialTheme.typography.labelSmall.copy(color = LightTextMuted))
+                    Text("${expert.totalTips}", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                }
+                Column {
+                    Text("Rating", style = MaterialTheme.typography.labelSmall.copy(color = LightTextMuted))
+                    Text("★ ${expert.rating}", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = OrangePrimary))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            TradeNovPrimaryButton(
+                text = if (expert.isFollowed) "Following" else "Follow",
+                onClick = onToggleFollow,
+                modifier = Modifier.height(38.dp),
+                backgroundColor = if (expert.isFollowed) MaterialTheme.colorScheme.surfaceVariant else OrangePrimary,
+                contentColor = if (expert.isFollowed) MaterialTheme.colorScheme.onSurface else Color.White
+            )
+        }
+    }
+}
+
 

@@ -10,6 +10,7 @@ val OrangeSubtle = Color(0xFFFFE8D1)
 
 // Financial Market Indicators
 val ProfitGreen = Color(0xFF10B981)
+val EmeraldGreen = ProfitGreen
 val ProfitGreenLight = Color(0xFFD1FAE5)
 val LossRed = Color(0xFFEF4444)
 val LossRedLight = Color(0xFFFEE2E2)

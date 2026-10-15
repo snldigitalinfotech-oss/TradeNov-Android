@@ -1,5 +1,7 @@
 package com.tradenov.app.features.expert
 
+import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -8,11 +10,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tradenov.app.core.data.SessionManager
 import com.tradenov.app.core.data.TradeNovRepository
+import com.tradenov.app.core.designsystem.LossRed
 import com.tradenov.app.core.designsystem.OrangePrimary
 import com.tradenov.app.features.trader.TraderAccountScreen
 
@@ -34,7 +38,45 @@ fun ExpertMainScreen(
     sessionManager: SessionManager,
     onLogout: () -> Unit
 ) {
+    val context = LocalContext.current
     var selectedTab by remember { mutableStateOf(ExpertBottomTab.DASHBOARD) }
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    // Hardware back press / edge back swipe prevention
+    BackHandler(enabled = true) {
+        if (selectedTab != ExpertBottomTab.DASHBOARD) {
+            selectedTab = ExpertBottomTab.DASHBOARD
+        } else {
+            showExitDialog = true
+        }
+    }
+
+    if (showExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitDialog = false },
+            title = {
+                Text("Exit TradeNov?", fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text("Are you sure you want to exit the application?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showExitDialog = false
+                        (context as? Activity)?.finish()
+                    }
+                ) {
+                    Text("Exit", color = LossRed, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitDialog = false }) {
+                    Text("Cancel", fontWeight = FontWeight.Medium)
+                }
+            }
+        )
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,

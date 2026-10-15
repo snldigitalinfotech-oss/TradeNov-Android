@@ -108,9 +108,8 @@ data class Tip(
         get() {
             val pts = liveProfitLoss
             val multiplier = when (marketSegment) {
-                MarketSegment.OPTIONS -> 50.0
-                MarketSegment.FUTURES -> 25.0
-                MarketSegment.COMMODITY -> 10.0
+                MarketSegment.OPTIONS_INDEX, MarketSegment.OPTIONS_STOCKS -> 50.0
+                MarketSegment.COMMODITIES -> 10.0
                 else -> if (capturedEntryPrice < 500) 50.0 else 10.0
             }
             return pts * multiplier
