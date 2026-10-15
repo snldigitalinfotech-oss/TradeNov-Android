@@ -35,10 +35,12 @@ fun TraderHomeScreen(
     onNavigateWallet: () -> Unit,
     onNavigateNotifications: () -> Unit,
     onNavigateExpertProfile: (String) -> Unit,
-    onNavigateWatchlist: () -> Unit
+    onNavigateWatchlist: () -> Unit,
+    onNavigateAccount: () -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
     val user by repository.sessionManager.currentUser.collectAsState()
-    val marketQuotes by repository.marketQuotes.collectAsState()
+    val wallet by repository.wallet.collectAsState()
     val tips by repository.tips.collectAsState()
     val experts by repository.experts.collectAsState()
     val notifications by repository.notifications.collectAsState()
@@ -46,6 +48,8 @@ fun TraderHomeScreen(
 
     var selectedSegment by remember { mutableStateOf(MarketSegment.ALL) }
     var searchQuery by remember { mutableStateOf("") }
+    var tipToUnlock by remember { mutableStateOf<Tip?>(null) }
+    var unlockedSuccessTip by remember { mutableStateOf<Tip?>(null) }
 
     val filteredTips = remember(tips, selectedSegment, searchQuery) {
         tips.filter {
@@ -84,15 +88,15 @@ fun TraderHomeScreen(
                                     modifier = Modifier
                                         .size(44.dp)
                                         .clip(CircleShape)
-                                        .background(Color.White),
+                                        .background(Color.White)
+                                        .clickable { onNavigateAccount() },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(
-                                        text = (user?.name?.take(1) ?: "T").uppercase(),
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            color = OrangePrimary
-                                        )
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = "Trader Profile",
+                                        tint = OrangePrimary,
+                                        modifier = Modifier.size(26.dp)
                                     )
                                 }
                                 Spacer(modifier = Modifier.width(12.dp))
@@ -211,50 +215,6 @@ fun TraderHomeScreen(
                 }
             }
 
-            // Live Market Ticker Strip
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(marketQuotes) { quote ->
-                        Surface(
-                            shape = CardShape,
-                            color = MaterialTheme.colorScheme.surface,
-                            border = CardDefaults.outlinedCardBorder(),
-                            modifier = Modifier.width(138.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text(
-                                    text = quote.name,
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    ),
-                                    maxLines = 1
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "₹${quote.price.toInt()}",
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.ExtraBold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "${if (quote.isPositive) "+" else ""}${quote.changePercent}%",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (quote.isPositive) ProfitGreen else LossRed
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-            }
 
             // Quick Actions Strip (4 cards matching reference UI)
             item {
@@ -341,20 +301,30 @@ fun TraderHomeScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // Tips Cards
-            if (filteredTips.isEmpty()) {
+            // Tips Cards - Only live active setups
+            val liveActiveTips = remember(filteredTips) {
+                filteredTips.filter { it.status == TipStatus.RUNNING }
+            }
+
+            if (liveActiveTips.isEmpty()) {
                 item {
                     EmptyStateView(
                         icon = Icons.Default.TrendingUp,
-                        title = "No Tips in this segment",
-                        description = "Check back soon as SEBI analysts publish new market breakouts."
+                        title = "No Live Tips in this segment",
+                        description = "Check back soon as SEBI analysts publish new live market breakouts."
                     )
                 }
             } else {
-                items(filteredTips.take(4)) { tip ->
+                items(liveActiveTips.take(4)) { tip ->
                     TipListingCard(
                         tip = tip,
-                        onClick = { onNavigateTipDetail(tip.id) },
+                        onClick = {
+                            if (tip.isUnlocked) {
+                                onNavigateTipDetail(tip.id)
+                            } else {
+                                tipToUnlock = tip
+                            }
+                        },
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
                     )
                 }
@@ -424,8 +394,37 @@ fun TraderHomeScreen(
                         )
                     }
                 }
-            }
         }
+    }
+
+    if (tipToUnlock != null) {
+        TipPurchaseConfirmationDialog(
+            tip = tipToUnlock!!,
+            walletBalance = wallet.availableBalance,
+            onDismiss = { tipToUnlock = null },
+            onConfirmPay = { couponCode, discountPercent ->
+                val targetTip = tipToUnlock!!
+                tipToUnlock = null
+                coroutineScope.launch {
+                    val res = repository.unlockTip(targetTip.id, couponCode, discountPercent)
+                    if (res.isSuccess) {
+                        unlockedSuccessTip = targetTip.copy(isUnlocked = true)
+                    }
+                }
+            },
+            onNavigateWallet = onNavigateWallet
+        )
+    }
+
+    if (unlockedSuccessTip != null) {
+        VipOnboardingSuccessDialog(
+            tip = unlockedSuccessTip!!,
+            onDismiss = {
+                val tipId = unlockedSuccessTip!!.id
+                unlockedSuccessTip = null
+                onNavigateTipDetail(tipId)
+            }
+        )
     }
 }
 
@@ -481,21 +480,39 @@ fun TipListingCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(if (tip.action == TradeAction.BUY) ProfitGreenLight else LossRedLight),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = if (tip.action == TradeAction.BUY) "B" else "S",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            color = if (tip.action == TradeAction.BUY) ProfitGreen else LossRed
+                if (tip.isUnlocked) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(if (tip.action == TradeAction.BUY) ProfitGreenLight else LossRedLight),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (tip.action == TradeAction.BUY) "B" else "S",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                color = if (tip.action == TradeAction.BUY) ProfitGreen else LossRed
+                            )
                         )
-                    )
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(OrangeLight),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Locked Setup",
+                            tint = OrangePrimary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
+
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {
                     Text(
@@ -503,7 +520,7 @@ fun TipListingCard(
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
                     Text(
-                        text = "${tip.marketSegment.displayName} • ${tip.tradeType.name}",
+                        text = "${tip.marketSegment.displayName} • ${if (tip.isUnlocked) tip.tradeType.name else "PREMIUM SETUP"}",
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp
@@ -513,17 +530,35 @@ fun TipListingCard(
             }
 
             Column(horizontalAlignment = Alignment.End) {
-                StatusBadge(status = tip.status.name)
-                if (tip.status == TipStatus.TARGET_HIT || tip.liveProfitLoss != 0.0) {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = tip.displayProfitLossText,
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            color = if (tip.profitLossRupees >= 0) ProfitGreen else LossRed,
-                            fontSize = 11.sp
+                if (tip.isUnlocked) {
+                    StatusBadge(status = tip.status.name)
+                    if (tip.status == TipStatus.TARGET_HIT || tip.liveProfitLoss != 0.0) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = tip.displayProfitLossText,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                color = if (tip.profitLossRupees >= 0) ProfitGreen else LossRed,
+                                fontSize = 11.sp
+                            )
                         )
-                    )
+                    }
+                } else {
+                    Surface(
+                        shape = PillShape,
+                        color = OrangeLight,
+                        border = CardDefaults.outlinedCardBorder()
+                    ) {
+                        Text(
+                            text = "PREMIUM",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = OrangePrimary,
+                                fontSize = 10.sp
+                            ),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                        )
+                    }
                 }
             }
         }
@@ -555,7 +590,7 @@ fun TipListingCard(
                 }
             }
         } else {
-            // Locked details preview (Blurred feel matching specification)
+            // Locked details preview (Fully masked matching requirements)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -565,19 +600,30 @@ fun TipListingCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = null,
-                        tint = OrangePrimary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = OrangePrimary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Entry, Targets & Stop Loss Masked",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = OrangePrimary
+                            )
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Entry & Targets Locked",
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = OrangePrimary
+                        text = "Entry: ₹••••  |  Target: ₹••••  |  SL: ₹••••",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
                     )
                 }

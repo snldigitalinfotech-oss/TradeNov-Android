@@ -138,4 +138,40 @@ class AuthViewModel(
         sessionManager.clearSession()
         onLoggedOut()
     }
+
+    fun requestForgotPassword(email: String, onSuccess: () -> Unit) {
+        if (email.isBlank() || !email.contains("@")) {
+            _errorMessage.value = "Please enter a valid registered email address"
+            return
+        }
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            val res = repository.forgotPassword(email)
+            _isLoading.value = false
+            res.onSuccess {
+                onSuccess()
+            }.onFailure { err ->
+                _errorMessage.value = err.message ?: "Failed to send verification code"
+            }
+        }
+    }
+
+    fun submitResetPassword(email: String, otp: String, newPass: String, onSuccess: () -> Unit) {
+        if (otp.isBlank() || newPass.length < 6) {
+            _errorMessage.value = "Enter verification code and new password (min 6 chars)"
+            return
+        }
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            val res = repository.resetPassword(email, otp, newPass)
+            _isLoading.value = false
+            res.onSuccess {
+                onSuccess()
+            }.onFailure { err ->
+                _errorMessage.value = err.message ?: "Failed to reset password"
+            }
+        }
+    }
 }

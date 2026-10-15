@@ -1,5 +1,6 @@
 package com.tradenov.app.features.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,6 +9,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.res.painterResource
+import com.tradenov.app.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -37,6 +40,10 @@ fun RegisterScreen(
     var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf(UserRole.TRADER) }
+    var agreedToTerms by remember { mutableStateOf(false) }
+    var showTermsDialog by remember { mutableStateOf(false) }
+    var termsDialogTitle by remember { mutableStateOf("") }
+    var termsDialogText by remember { mutableStateOf("") }
 
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
@@ -52,6 +59,19 @@ fun RegisterScreen(
                 .padding(horizontal = 24.dp, vertical = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // App Official Brand Logo
+            Image(
+                painter = painterResource(id = R.drawable.tradenov_logo),
+                contentDescription = "TradeNov Official Logo",
+                modifier = Modifier
+                    .height(44.dp)
+                    .fillMaxWidth(0.6f)
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
             Text(
                 text = "Create Your Account",
                 style = MaterialTheme.typography.headlineLarge.copy(
@@ -237,17 +257,99 @@ fun RegisterScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Mandatory Terms & Privacy Checkbox
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { agreedToTerms = !agreedToTerms },
+                verticalAlignment = Alignment.Top
+            ) {
+                Checkbox(
+                    checked = agreedToTerms,
+                    onCheckedChange = { agreedToTerms = it },
+                    colors = CheckboxDefaults.colors(checkedColor = OrangePrimary)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Column {
+                    Text(
+                        text = "I have read and agree to TradeNov's Terms & Conditions, Privacy Policy, and Refund Policy.",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 16.sp
+                        )
+                    )
+                    Row(
+                        modifier = Modifier.padding(top = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = "Terms",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = OrangePrimary,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            modifier = Modifier.clickable {
+                                termsDialogTitle = "Terms & Conditions"
+                                termsDialogText = "By creating an account on TradeNov, you agree to our Terms of Service. Trading securities and derivatives carries market risks. TradeNov is an informational and analytics platform connecting certified experts and traders."
+                                showTermsDialog = true
+                            }
+                        )
+                        Text(
+                            text = "Privacy Policy",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = OrangePrimary,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            modifier = Modifier.clickable {
+                                termsDialogTitle = "Privacy Policy"
+                                termsDialogText = "TradeNov respects your privacy. We collect registered name, email, and mobile number to authenticate your account and securely deliver signals. Your personal financial data is encrypted."
+                                showTermsDialog = true
+                            }
+                        )
+                        Text(
+                            text = "Refund Policy",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = OrangePrimary,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            modifier = Modifier.clickable {
+                                termsDialogTitle = "Cancellation & Refund Policy"
+                                termsDialogText = "All purchases of tips and subscription passes can be cancelled if a signal is invalid before trade execution. Wallet top-ups can be refunded to the original payment source within 7 days upon support review."
+                                showTermsDialog = true
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             TradeNovPrimaryButton(
                 text = if (selectedRole == UserRole.EXPERT) "Register as Expert" else "Create Trader Account",
                 onClick = {
+                    if (!agreedToTerms) return@TradeNovPrimaryButton
                     viewModel.register(name, email, phone, password, selectedRole) { event ->
                         onRegisterSuccess(event)
                     }
                 },
-                isLoading = isLoading
+                isLoading = isLoading,
+                enabled = agreedToTerms
             )
+
+            if (showTermsDialog) {
+                AlertDialog(
+                    onDismissRequest = { showTermsDialog = false },
+                    title = { Text(termsDialogTitle, fontWeight = FontWeight.Bold) },
+                    text = { Text(termsDialogText, style = MaterialTheme.typography.bodyMedium) },
+                    confirmButton = {
+                        TextButton(onClick = { showTermsDialog = false }) {
+                            Text("I Understand", color = OrangePrimary, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 

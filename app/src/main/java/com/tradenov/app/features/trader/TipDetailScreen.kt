@@ -51,7 +51,8 @@ fun TipDetailScreen(
 
     val isWatchlisted = watchlistSymbols.contains(tip.symbol)
     var isUnlocking by remember { mutableStateOf(false) }
-    var showSuccessModal by remember { mutableStateOf(false) }
+    var showConfirmPurchase by remember { mutableStateOf(false) }
+    var unlockedSuccessTip by remember { mutableStateOf<Tip?>(null) }
     var unlockError by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
@@ -121,21 +122,7 @@ fun TipDetailScreen(
 
                         Button(
                             onClick = {
-                                if (wallet.availableBalance < tip.basePrice) {
-                                    unlockError = "Insufficient wallet balance (₹${wallet.availableBalance.toInt()}). Please add money."
-                                } else {
-                                    isUnlocking = true
-                                    unlockError = null
-                                    coroutineScope.launch {
-                                        val res = repository.unlockTip(tip.id)
-                                        isUnlocking = false
-                                        if (res.isSuccess) {
-                                            showSuccessModal = true
-                                        } else {
-                                            unlockError = res.exceptionOrNull()?.message
-                                        }
-                                    }
-                                }
+                                showConfirmPurchase = true
                             },
                             modifier = Modifier.width(180.dp).height(50.dp),
                             shape = ButtonShape,
@@ -199,18 +186,47 @@ fun TipDetailScreen(
                     ) {
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Surface(
-                                    shape = PillShape,
-                                    color = if (tip.action == TradeAction.BUY) ProfitGreen else LossRed
-                                ) {
-                                    Text(
-                                        text = tip.action.name,
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Color.White),
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                                    )
+                                if (tip.isUnlocked) {
+                                    Surface(
+                                        shape = PillShape,
+                                        color = if (tip.action == TradeAction.BUY) ProfitGreen else LossRed
+                                    ) {
+                                        Text(
+                                            text = tip.action.name,
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Color.White),
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                        )
+                                    }
+                                } else {
+                                    Surface(
+                                        shape = PillShape,
+                                        color = OrangeLight,
+                                        border = CardDefaults.outlinedCardBorder()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Lock,
+                                                contentDescription = null,
+                                                tint = OrangePrimary,
+                                                modifier = Modifier.size(12.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "ACTION LOCKED",
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    color = OrangePrimary,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 10.sp
+                                                )
+                                            )
+                                        }
+                                    }
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
-                                StatusBadge(status = tip.status.name)
+                                StatusBadge(status = if (tip.isUnlocked) tip.status.name else "PREMIUM")
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
@@ -228,12 +244,12 @@ fun TipDetailScreen(
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             )
-                            if (tip.isUnlocked) {
+                            if (tip.isUnlocked && tip.capturedEntryPrice > 0) {
                                 Text(
-                                    text = "${if (tip.liveProfitLoss >= 0) "+" else ""}₹${String.format("%.1f", tip.liveProfitLoss)} (${String.format("%.1f", tip.liveProfitLossPercent)}%)",
+                                    text = tip.displayProfitLossText,
                                     style = MaterialTheme.typography.labelMedium.copy(
                                         fontWeight = FontWeight.Bold,
-                                        color = if (tip.liveProfitLoss >= 0) ProfitGreen else LossRed
+                                        color = if (tip.profitLossRupees >= 0) ProfitGreen else LossRed
                                     )
                                 )
                             }
@@ -313,6 +329,28 @@ fun TipDetailScreen(
                     }
                 }
                 Spacer(modifier = Modifier.height(20.dp))
+            }
+
+            // Expert Analysis & Technical Notes (Revealed when unlocked)
+            if (tip.isUnlocked && !tip.notes.isNullOrBlank()) {
+                item {
+                    TradeNovCard {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Analytics, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Expert Rationale & Technical Analysis", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = tip.notes ?: "",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                lineHeight = 20.sp
+                            )
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
             }
 
             // Social VIP Broadcast Desk Card
@@ -430,53 +468,36 @@ fun TipDetailScreen(
         }
     }
 
-    // Purchase Success Dialog
-    if (showSuccessModal) {
-        AlertDialog(
-            onDismissRequest = { showSuccessModal = false },
-            confirmButton = {
-                Button(
-                    onClick = { showSuccessModal = false },
-                    shape = PillShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary)
-                ) {
-                    Text("View Unlocked Setup", fontWeight = FontWeight.Bold)
-                }
-            },
-            title = {
-                Text("Tip Unlocked Successfully! 🎉", fontWeight = FontWeight.Bold)
-            },
-            text = {
-                Column {
-                    Text(
-                        "Full trade brackets & stop loss are now active. Join official VIP broadcast groups to receive instant target alerts:",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Spacer(modifier = Modifier.height(14.dp))
-                    Button(
-                        onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/tradenov"))
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = PillShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = TelegramBlue)
-                    ) {
-                        Text("1-Click Join Telegram VIP", fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(
-                        onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://chat.whatsapp.com/TradeNovVIPAlerts"))
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = PillShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = WhatsAppGreen)
-                    ) {
-                        Text("1-Click Join WhatsApp VIP", fontWeight = FontWeight.Bold)
+    // Purchase Confirmation Dialog
+    if (showConfirmPurchase) {
+        TipPurchaseConfirmationDialog(
+            tip = tip,
+            walletBalance = wallet.availableBalance,
+            onDismiss = { showConfirmPurchase = false },
+            onConfirmPay = { couponCode, discountPercent ->
+                showConfirmPurchase = false
+                isUnlocking = true
+                unlockError = null
+                coroutineScope.launch {
+                    val res = repository.unlockTip(tip.id, couponCode, discountPercent)
+                    isUnlocking = false
+                    if (res.isSuccess) {
+                        unlockedSuccessTip = tip.copy(isUnlocked = true)
+                    } else {
+                        unlockError = res.exceptionOrNull()?.message ?: "Transaction failed. Please check wallet balance."
                     }
                 }
+            },
+            onNavigateWallet = onNavigateWallet
+        )
+    }
+
+    // Purchase Success & VIP Onboarding Dialog
+    if (unlockedSuccessTip != null) {
+        VipOnboardingSuccessDialog(
+            tip = unlockedSuccessTip!!,
+            onDismiss = {
+                unlockedSuccessTip = null
             }
         )
     }

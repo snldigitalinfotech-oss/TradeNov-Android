@@ -1,5 +1,6 @@
 package com.tradenov.app.features.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,6 +9,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.res.painterResource
+import com.tradenov.app.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -33,8 +36,8 @@ fun LoginScreen(
     onNavigateForgotPassword: () -> Unit,
     onLoginSuccess: (AuthNavigationEvent) -> Unit
 ) {
-    var emailOrPhone by remember { mutableStateOf("aman.trader@tradenov.com") }
-    var password by remember { mutableStateOf("Tradenov@123") }
+    var emailOrPhone by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
     val isLoading by viewModel.isLoading.collectAsState()
@@ -53,21 +56,14 @@ fun LoginScreen(
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // App Brand Logo & Name
-            Box(
+            // App Official Brand Logo
+            Image(
+                painter = painterResource(id = R.drawable.tradenov_logo),
+                contentDescription = "TradeNov Official Logo",
                 modifier = Modifier
-                    .size(68.dp)
-                    .clip(CircleShape)
-                    .background(OrangeLight),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.TrendingUp,
-                    contentDescription = null,
-                    tint = OrangePrimary,
-                    modifier = Modifier.size(38.dp)
-                )
-            }
+                    .height(46.dp)
+                    .fillMaxWidth(0.65f)
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -184,124 +180,7 @@ fun LoginScreen(
                 isLoading = isLoading
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Quick Demo Switchers (Trader vs Expert)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(
-                    onClick = {
-                        emailOrPhone = "aman.trader@tradenov.com"
-                        password = "Tradenov@123"
-                    },
-                    modifier = Modifier.weight(1f),
-                    shape = PillShape,
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = OrangePrimary)
-                ) {
-                    Text("Auto Trader", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                }
-
-                OutlinedButton(
-                    onClick = {
-                        emailOrPhone = "kunal.expert@tradenov.com"
-                        password = "Tradenov@123"
-                    },
-                    modifier = Modifier.weight(1f),
-                    shape = PillShape,
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = OrangePrimary)
-                ) {
-                    Text("Auto Expert", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Divider "Or continue with"
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HorizontalDivider(
-                    modifier = Modifier.weight(1f),
-                    color = MaterialTheme.colorScheme.outline
-                )
-                Text(
-                    text = "  Or continue with  ",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                )
-                HorizontalDivider(
-                    modifier = Modifier.weight(1f),
-                    color = MaterialTheme.colorScheme.outline
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Social Buttons (Matching reference UI)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp)
-                        .clip(ButtonShape)
-                        .clickable {
-                            viewModel.login("google.user@tradenov.com", "GooglePass123", onLoginSuccess)
-                        },
-                    shape = ButtonShape,
-                    color = MaterialTheme.colorScheme.surface,
-                    border = CardDefaults.outlinedCardBorder()
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Google",
-                            tint = Color(0xFFEA4335),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Google", style = MaterialTheme.typography.labelMedium)
-                    }
-                }
-
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp)
-                        .clip(ButtonShape)
-                        .clickable {
-                            viewModel.login("apple.user@tradenov.com", "ApplePass123", onLoginSuccess)
-                        },
-                    shape = ButtonShape,
-                    color = MaterialTheme.colorScheme.surface,
-                    border = CardDefaults.outlinedCardBorder()
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.PhoneIphone,
-                            contentDescription = "Apple",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Apple", style = MaterialTheme.typography.labelMedium)
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.height(28.dp))
 
             Spacer(modifier = Modifier.height(32.dp))
 

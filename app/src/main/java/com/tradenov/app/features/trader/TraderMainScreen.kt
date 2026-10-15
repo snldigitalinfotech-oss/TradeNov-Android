@@ -106,13 +106,15 @@ fun TraderMainScreen(
                     onNavigateWallet = { showWalletScreen = true },
                     onNavigateNotifications = { selectedTab = TraderBottomTab.NOTIFICATIONS },
                     onNavigateExpertProfile = { selectedTab = TraderBottomTab.SUBSCRIPTIONS },
-                    onNavigateWatchlist = { selectedTab = TraderBottomTab.TIPS }
+                    onNavigateWatchlist = { selectedTab = TraderBottomTab.TIPS },
+                    onNavigateAccount = { selectedTab = TraderBottomTab.ACCOUNT }
                 )
             }
             TraderBottomTab.TIPS -> {
                 TipsMarketplaceScreen(
                     repository = repository,
-                    onNavigateTipDetail = { id -> selectedTipIdForDetail = id }
+                    onNavigateTipDetail = { id -> selectedTipIdForDetail = id },
+                    onNavigateWallet = { showWalletScreen = true }
                 )
             }
             TraderBottomTab.SUBSCRIPTIONS -> {

@@ -60,7 +60,7 @@ fun TraderAccountScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            contentPadding = PaddingValues(top = 10.dp, bottom = 40.dp)
+            contentPadding = PaddingValues(top = 10.dp, bottom = 120.dp)
         ) {
             // Profile Card (Matching Reference Screen 18)
             item {

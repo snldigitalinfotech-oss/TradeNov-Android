@@ -28,6 +28,16 @@ data class VerifyOtpRequest(
     val otp: String
 )
 
+data class ForgotPasswordRequest(
+    val login: String
+)
+
+data class ResetPasswordRequest(
+    val login: String,
+    val otp: String,
+    val newPassword: String
+)
+
 data class ApiResponse<T>(
     val success: Boolean,
     val message: String? = null,
@@ -123,6 +133,12 @@ interface TradeNovApiService {
 
     @POST("auth/verify-otp")
     suspend fun verifyOtp(@Body req: VerifyOtpRequest): Response<ApiResponse<AuthResponseData>>
+
+    @POST("auth/forgot-password")
+    suspend fun forgotPassword(@Body req: ForgotPasswordRequest): Response<ApiResponse<Any>>
+
+    @POST("auth/reset-password")
+    suspend fun resetPassword(@Body req: ResetPasswordRequest): Response<ApiResponse<Any>>
 
     @GET("notifications/vip-channels")
     suspend fun getVipChannels(@Query("segment") segment: String? = null): Response<ApiResponse<VipChannelsDto>>

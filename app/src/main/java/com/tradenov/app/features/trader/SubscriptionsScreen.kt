@@ -39,6 +39,7 @@ fun SubscriptionsScreen(
     val activeSubscribedPlans = remember(allPlans) { allPlans.filter { it.isSubscribed } }
 
     var isSubscribing by remember { mutableStateOf(false) }
+    var planToSubscribe by remember { mutableStateOf<SubscriptionPlan?>(null) }
     var subscribeError by remember { mutableStateOf<String?>(null) }
     var subscribedSuccessPlan by remember { mutableStateOf<SubscriptionPlan?>(null) }
 
@@ -67,7 +68,7 @@ fun SubscriptionsScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            contentPadding = PaddingValues(top = 12.dp, bottom = 32.dp)
+            contentPadding = PaddingValues(top = 12.dp, bottom = 110.dp)
         ) {
             // Error banner
             if (subscribeError != null) {
@@ -206,75 +207,45 @@ fun SubscriptionsScreen(
                     TradeNovPrimaryButton(
                         text = "Subscribe for ₹${plan.offerPrice.toInt()}",
                         onClick = {
-                            if (wallet.availableBalance < plan.offerPrice) {
-                                subscribeError = "Insufficient wallet balance (₹${wallet.availableBalance.toInt()}). Please add money."
-                            } else {
-                                isSubscribing = true
-                                subscribeError = null
-                                coroutineScope.launch {
-                                    val res = repository.subscribePlan(plan.id)
-                                    isSubscribing = false
-                                    if (res.isSuccess) {
-                                        subscribedSuccessPlan = plan
-                                    } else {
-                                        subscribeError = res.exceptionOrNull()?.message
-                                    }
-                                }
-                            }
+                            planToSubscribe = plan
                         },
-                        isLoading = isSubscribing
+                        isLoading = isSubscribing && planToSubscribe?.id == plan.id
                     )
                 }
             }
         }
     }
 
-    // Success Modal
+    // Purchase Confirmation Modal (with Coupon Code input and Wallet check)
+    if (planToSubscribe != null) {
+        PlanPurchaseConfirmationDialog(
+            plan = planToSubscribe!!,
+            walletBalance = wallet.availableBalance,
+            onDismiss = { planToSubscribe = null },
+            onConfirmPay = { couponCode, discountPercent ->
+                val targetPlan = planToSubscribe!!
+                planToSubscribe = null
+                isSubscribing = true
+                subscribeError = null
+                coroutineScope.launch {
+                    val res = repository.subscribePlan(targetPlan.id, couponCode, discountPercent)
+                    isSubscribing = false
+                    if (res.isSuccess) {
+                        subscribedSuccessPlan = targetPlan.copy(isSubscribed = true)
+                    } else {
+                        subscribeError = res.exceptionOrNull()?.message ?: "Subscription failed. Please check wallet balance."
+                    }
+                }
+            },
+            onNavigateWallet = onNavigateWallet
+        )
+    }
+
+    // Success Modal with 1-Click VIP Channel Joins
     if (subscribedSuccessPlan != null) {
-        val p = subscribedSuccessPlan!!
-        AlertDialog(
-            onDismissRequest = { subscribedSuccessPlan = null },
-            confirmButton = {
-                Button(
-                    onClick = { subscribedSuccessPlan = null },
-                    shape = PillShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary)
-                ) {
-                    Text("Done", fontWeight = FontWeight.Bold)
-                }
-            },
-            title = {
-                Text("Subscription Activated! 🎉", fontWeight = FontWeight.Bold)
-            },
-            text = {
-                Column {
-                    Text("All tips from ${p.expertName} are now unlocked. Join your VIP broadcast channels below:", style = MaterialTheme.typography.bodyMedium)
-                    Spacer(modifier = Modifier.height(14.dp))
-                    Button(
-                        onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(p.telegramInviteUrl))
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = PillShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = TelegramBlue)
-                    ) {
-                        Text("Join Telegram VIP Channel", fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(
-                        onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(p.whatsappInviteUrl))
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = PillShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = WhatsAppGreen)
-                    ) {
-                        Text("Join WhatsApp VIP Group", fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
+        SubscriptionSuccessDialog(
+            plan = subscribedSuccessPlan!!,
+            onDismiss = { subscribedSuccessPlan = null }
         )
     }
 }
