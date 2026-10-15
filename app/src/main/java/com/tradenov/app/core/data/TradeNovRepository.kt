@@ -35,8 +35,22 @@ class TradeNovRepository(
     private val _blogs = MutableStateFlow<List<Blog>>(initialBlogs())
     val blogs: StateFlow<List<Blog>> = _blogs.asStateFlow()
 
+    private val _journalEntries = MutableStateFlow<List<TradeJournalEntry>>(initialJournalEntries())
+    val journalEntries: StateFlow<List<TradeJournalEntry>> = _journalEntries.asStateFlow()
+
+    private val _referralData = MutableStateFlow<ReferralData>(initialReferralData())
+    val referralData: StateFlow<ReferralData> = _referralData.asStateFlow()
+
     private val _watchlistSymbols = MutableStateFlow<Set<String>>(setOf("RELIANCE", "NIFTY 50", "GOLD", "BTCUSDT"))
     val watchlistSymbols: StateFlow<Set<String>> = _watchlistSymbols.asStateFlow()
+
+    fun addJournalEntry(entry: TradeJournalEntry) {
+        _journalEntries.value = listOf(entry) + _journalEntries.value
+    }
+
+    fun deleteJournalEntry(id: String) {
+        _journalEntries.value = _journalEntries.value.filter { it.id != id }
+    }
 
     // Authentication methods
     suspend fun login(emailOrPhone: String, pass: String): Result<User> {
@@ -754,4 +768,100 @@ class TradeNovRepository(
             )
         )
     }
+
+    private fun initialJournalEntries(): List<TradeJournalEntry> {
+        return listOf(
+            TradeJournalEntry(
+                id = "jnl_001",
+                symbol = "RELIANCE",
+                marketSegment = MarketSegment.STOCKS,
+                action = TradeAction.BUY,
+                entryPrice = 2952.0,
+                exitPrice = 3015.0,
+                quantity = 50,
+                pnlRupees = 3150.0,
+                pnlPercent = 2.13,
+                date = "Today, 02:30 PM",
+                notes = "Followed Kunal Sharma breakout signal. Trailed SL to T1.",
+                emotion = "Disciplined"
+            ),
+            TradeJournalEntry(
+                id = "jnl_002",
+                symbol = "NIFTY 24800 CE",
+                marketSegment = MarketSegment.OPTIONS_INDEX,
+                action = TradeAction.BUY,
+                entryPrice = 145.0,
+                exitPrice = 210.0,
+                quantity = 100,
+                pnlRupees = 6500.0,
+                pnlPercent = 44.8,
+                date = "Yesterday",
+                notes = "Morning momentum burst above 24850 pivot. Closed at T2.",
+                emotion = "Confident"
+            ),
+            TradeJournalEntry(
+                id = "jnl_003",
+                symbol = "TATASTEEL",
+                marketSegment = MarketSegment.STOCKS,
+                action = TradeAction.SELL,
+                entryPrice = 162.0,
+                exitPrice = 164.5,
+                quantity = 200,
+                pnlRupees = -500.0,
+                pnlPercent = -1.54,
+                date = "12 Oct 2026",
+                notes = "Metal sector reverse divergence. Respected stop loss without hesitation.",
+                emotion = "Cautious"
+            )
+        )
+    }
+
+    private fun initialReferralData(): ReferralData {
+        return ReferralData(
+            referralCode = "TRADENOV10",
+            referralLink = "https://tradenov.com/join?ref=TRADENOV10",
+            totalReferred = 14,
+            totalEarnedRupees = 4250.0,
+            pendingPayoutRupees = 850.0,
+            commissionPercent = 10,
+            referrals = listOf(
+                ReferredUser("ref_1", "Sanjay Patel", "Today, 11:20 AM", "ACTIVE", 450.0),
+                ReferredUser("ref_2", "Rohan Kulkarni", "Yesterday", "ACTIVE", 350.0),
+                ReferredUser("ref_3", "Neha Singhania", "12 Oct 2026", "ACTIVE", 600.0),
+                ReferredUser("ref_4", "Amitabh Joshi", "10 Oct 2026", "PENDING", 250.0),
+                ReferredUser("ref_5", "Deepak Roy", "08 Oct 2026", "ACTIVE", 500.0)
+            )
+        )
+    }
+
+    fun getFaqs(): List<FaqItem> {
+        return listOf(
+            FaqItem(
+                question = "How do Tip Unlocks work on TradeNov?",
+                answer = "Each premium setup is published by SEBI registered research analysts. You can unlock single setups using your wallet balance, or get unlimited free access to all setups with a VIP Subscription Pass.",
+                category = "Tips & Setups"
+            ),
+            FaqItem(
+                question = "How do I join the VIP Telegram and WhatsApp Groups?",
+                answer = "Immediately after unlocking a tip or subscribing to a VIP Pass, a 1-click VIP Onboarding screen provides instant direct access links to our exclusive VIP Telegram Channel and WhatsApp Group.",
+                category = "VIP Access"
+            ),
+            FaqItem(
+                question = "How do I add funds to my TradeNov Wallet?",
+                answer = "Navigate to 'TradeNov Wallet', tap 'Add Money', enter the amount or select a preset chip, and complete the instant payment via UPI, Google Pay, PhonePe, Paytm, Debit Card, or NetBanking.",
+                category = "Wallet & Payments"
+            ),
+            FaqItem(
+                question = "What is the Cancellation & Refund Policy?",
+                answer = "If a trade setup does not trigger entry before market expiry, the unlock fee is automatically credited back to your wallet. Wallet top-ups can be refunded back to the bank account within 7 days upon support review.",
+                category = "Refunds"
+            ),
+            FaqItem(
+                question = "How does the Refer & Earn 10% Program work?",
+                answer = "Share your unique referral code or link with other traders. Whenever a referred trader tops up their wallet or subscribes to a VIP pass, you earn a 10% instant cash commission directly in your wallet.",
+                category = "Referrals"
+            )
+        )
+    }
 }
+

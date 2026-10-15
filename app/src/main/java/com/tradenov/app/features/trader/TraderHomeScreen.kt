@@ -39,7 +39,11 @@ fun TraderHomeScreen(
     onNavigateNotifications: () -> Unit,
     onNavigateExpertProfile: (String) -> Unit,
     onNavigateWatchlist: () -> Unit,
-    onNavigateAccount: () -> Unit
+    onNavigateAccount: () -> Unit,
+    onNavigateJournal: () -> Unit = {},
+    onNavigateCourses: () -> Unit = {},
+    onNavigateReferrals: () -> Unit = {},
+    onNavigateExperts: () -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
     val user by repository.sessionManager.currentUser.collectAsState()
@@ -47,6 +51,7 @@ fun TraderHomeScreen(
     val tips by repository.tips.collectAsState()
     val experts by repository.experts.collectAsState()
     val notifications by repository.notifications.collectAsState()
+    val referralData by repository.referralData.collectAsState()
     val unreadNotifsCount = notifications.count { !it.isRead }
 
     var selectedSegment by remember { mutableStateOf(MarketSegment.ALL) }
@@ -63,6 +68,10 @@ fun TraderHomeScreen(
 
     val liveActiveTips = remember(filteredTips) {
         filteredTips.filter { it.status == TipStatus.RUNNING }
+    }
+
+    val unlockedTips = remember(tips) {
+        tips.filter { it.isUnlocked }
     }
 
     Scaffold(
@@ -265,34 +274,175 @@ fun TraderHomeScreen(
             }
 
 
-            // Quick Actions Strip (4 cards matching reference UI)
+            // Real-Time Stats Grid (Matching Web Dashboard Section 1.1)
             item {
-                Spacer(modifier = Modifier.height(20.dp))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    QuickActionItem(
-                        icon = Icons.Default.AddCard,
-                        label = "Add Money",
-                        onClick = onNavigateWallet
+                Spacer(modifier = Modifier.height(18.dp))
+                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        DashboardStatCard(
+                            modifier = Modifier.weight(1f),
+                            title = "Wallet Balance",
+                            value = "₹${(user?.walletBalance ?: wallet.availableBalance).toInt()}",
+                            subtext = "+ Add Money",
+                            badgeColor = ProfitGreenLight,
+                            textColor = ProfitGreen,
+                            onClick = onNavigateWallet
+                        )
+                        DashboardStatCard(
+                            modifier = Modifier.weight(1f),
+                            title = "VIP Subscriptions",
+                            value = "PRO PASS",
+                            subtext = "Unlimited Access",
+                            badgeColor = OrangeLight,
+                            textColor = OrangePrimary,
+                            onClick = onNavigateTips
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        DashboardStatCard(
+                            modifier = Modifier.weight(1f),
+                            title = "Tips Unlocked",
+                            value = "${unlockedTips.size} Active",
+                            subtext = "View Portfolio",
+                            badgeColor = MaterialTheme.colorScheme.surfaceVariant,
+                            textColor = MaterialTheme.colorScheme.onSurface,
+                            onClick = onNavigateTips
+                        )
+                        DashboardStatCard(
+                            modifier = Modifier.weight(1f),
+                            title = "Referral Rewards",
+                            value = "₹${referralData.totalEarnedRupees.toInt()}",
+                            subtext = "10% Cashback",
+                            badgeColor = ProfitGreenLight,
+                            textColor = ProfitGreen,
+                            onClick = onNavigateReferrals
+                        )
+                    }
+                }
+            }
+
+            // Quick Tools & Hub Grid
+            item {
+                Spacer(modifier = Modifier.height(22.dp))
+                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                    Text(
+                        text = "Quick Tools & Hub",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
-                    QuickActionItem(
-                        icon = Icons.Default.TrendingUp,
-                        label = "Browse Tips",
-                        onClick = onNavigateTips
-                    )
-                    QuickActionItem(
-                        icon = Icons.Default.Stars,
-                        label = "VIP Plans",
-                        onClick = onNavigateTips
-                    )
-                    QuickActionItem(
-                        icon = Icons.Default.BookmarkBorder,
-                        label = "Watchlist",
-                        onClick = onNavigateWatchlist
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        QuickActionItem(
+                            icon = Icons.Default.TrendingUp,
+                            label = "Marketplace",
+                            onClick = onNavigateTips
+                        )
+                        QuickActionItem(
+                            icon = Icons.Default.Stars,
+                            label = "VIP Plans",
+                            onClick = onNavigateTips
+                        )
+                        QuickActionItem(
+                            icon = Icons.Default.VerifiedUser,
+                            label = "SEBI Experts",
+                            onClick = onNavigateExperts
+                        )
+                        QuickActionItem(
+                            icon = Icons.Default.MenuBook,
+                            label = "Journal",
+                            onClick = onNavigateJournal
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        QuickActionItem(
+                            icon = Icons.Default.School,
+                            label = "Academy",
+                            onClick = onNavigateCourses
+                        )
+                        QuickActionItem(
+                            icon = Icons.Default.Share,
+                            label = "Refer 10%",
+                            onClick = onNavigateReferrals
+                        )
+                        QuickActionItem(
+                            icon = Icons.Default.AccountBalanceWallet,
+                            label = "My Wallet",
+                            onClick = onNavigateWallet
+                        )
+                        QuickActionItem(
+                            icon = Icons.Default.BookmarkBorder,
+                            label = "Watchlist",
+                            onClick = onNavigateWatchlist
+                        )
+                    }
+                }
+            }
+
+            // Active Purchased Setups Strip (Matching Web Dashboard Section 1.1)
+            if (unlockedTips.isNotEmpty()) {
+                item {
+                    Spacer(modifier = Modifier.height(22.dp))
+                    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "My Active Signals",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Surface(
+                                    shape = PillShape,
+                                    color = ProfitGreenLight
+                                ) {
+                                    Text(
+                                        text = "${unlockedTips.size} UNLOCKED",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = ProfitGreen,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 9.sp
+                                        ),
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                            Text(
+                                text = "View All",
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    color = OrangePrimary,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                modifier = Modifier.clickable { onNavigateTips() }
+                            )
+                        }
+                    }
+                }
+
+                items(unlockedTips.take(2)) { tip ->
+                    TipListingCard(
+                        tip = tip,
+                        onClick = { onNavigateTipDetail(tip.id) },
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
                     )
                 }
             }
@@ -508,3 +658,36 @@ fun QuickActionItem(
         )
     }
 }
+
+@Composable
+fun DashboardStatCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    value: String,
+    subtext: String,
+    badgeColor: Color,
+    textColor: Color,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = modifier.clickable { onClick() },
+        shape = CardShape,
+        color = MaterialTheme.colorScheme.surface,
+        border = CardDefaults.outlinedCardBorder()
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(title, style = MaterialTheme.typography.labelSmall.copy(color = LightTextMuted, fontSize = 11.sp))
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(value, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold))
+            Spacer(modifier = Modifier.height(6.dp))
+            Surface(shape = PillShape, color = badgeColor) {
+                Text(
+                    text = subtext,
+                    style = MaterialTheme.typography.labelSmall.copy(color = textColor, fontWeight = FontWeight.Bold, fontSize = 10.sp),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                )
+            }
+        }
+    }
+}
+

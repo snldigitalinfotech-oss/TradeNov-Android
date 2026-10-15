@@ -41,18 +41,27 @@ fun TraderMainScreen(
     var selectedTab by remember { mutableStateOf(TraderBottomTab.HOME) }
     var selectedTipIdForDetail by remember { mutableStateOf<String?>(null) }
     var showWalletScreen by remember { mutableStateOf(false) }
+    var showReferralScreen by remember { mutableStateOf(false) }
+    var showSupportScreen by remember { mutableStateOf(false) }
+    var showJournalScreen by remember { mutableStateOf(false) }
+    var showCoursesScreen by remember { mutableStateOf(false) }
+    var showExpertsScreen by remember { mutableStateOf(false) }
+    var showStatutoryScreen by remember { mutableStateOf(false) }
     var showExitDialog by remember { mutableStateOf(false) }
 
     // Hardware back press / edge back swipe prevention
     BackHandler(enabled = true) {
-        if (selectedTipIdForDetail != null) {
-            selectedTipIdForDetail = null
-        } else if (showWalletScreen) {
-            showWalletScreen = false
-        } else if (selectedTab != TraderBottomTab.HOME) {
-            selectedTab = TraderBottomTab.HOME
-        } else {
-            showExitDialog = true
+        when {
+            selectedTipIdForDetail != null -> selectedTipIdForDetail = null
+            showWalletScreen -> showWalletScreen = false
+            showReferralScreen -> showReferralScreen = false
+            showSupportScreen -> showSupportScreen = false
+            showJournalScreen -> showJournalScreen = false
+            showCoursesScreen -> showCoursesScreen = false
+            showExpertsScreen -> showExpertsScreen = false
+            showStatutoryScreen -> showStatutoryScreen = false
+            selectedTab != TraderBottomTab.HOME -> selectedTab = TraderBottomTab.HOME
+            else -> showExitDialog = true
         }
     }
 
@@ -83,6 +92,7 @@ fun TraderMainScreen(
         )
     }
 
+    // Detail Screen
     if (selectedTipIdForDetail != null) {
         TipDetailScreen(
             tipId = selectedTipIdForDetail!!,
@@ -96,10 +106,62 @@ fun TraderMainScreen(
         return
     }
 
+    // Sub-modules
     if (showWalletScreen) {
         TraderWalletScreen(
             repository = repository,
             onBack = { showWalletScreen = false }
+        )
+        return
+    }
+
+    if (showReferralScreen) {
+        TraderReferralScreen(
+            repository = repository,
+            onBack = { showReferralScreen = false }
+        )
+        return
+    }
+
+    if (showSupportScreen) {
+        TraderSupportScreen(
+            repository = repository,
+            onBack = { showSupportScreen = false }
+        )
+        return
+    }
+
+    if (showJournalScreen) {
+        TraderJournalScreen(
+            repository = repository,
+            onBack = { showJournalScreen = false }
+        )
+        return
+    }
+
+    if (showCoursesScreen) {
+        TraderCoursesScreen(
+            repository = repository,
+            onBack = { showCoursesScreen = false }
+        )
+        return
+    }
+
+    if (showExpertsScreen) {
+        TraderExpertsScreen(
+            repository = repository,
+            onBack = { showExpertsScreen = false },
+            onNavigatePlans = {
+                showExpertsScreen = false
+                selectedTab = TraderBottomTab.SUBSCRIPTIONS
+            }
+        )
+        return
+    }
+
+    if (showStatutoryScreen) {
+        TraderStatutoryScreen(
+            onBack = { showStatutoryScreen = false }
         )
         return
     }
@@ -153,7 +215,11 @@ fun TraderMainScreen(
                     onNavigateNotifications = { selectedTab = TraderBottomTab.NOTIFICATIONS },
                     onNavigateExpertProfile = { selectedTab = TraderBottomTab.SUBSCRIPTIONS },
                     onNavigateWatchlist = { selectedTab = TraderBottomTab.TIPS },
-                    onNavigateAccount = { selectedTab = TraderBottomTab.ACCOUNT }
+                    onNavigateAccount = { selectedTab = TraderBottomTab.ACCOUNT },
+                    onNavigateJournal = { showJournalScreen = true },
+                    onNavigateCourses = { showCoursesScreen = true },
+                    onNavigateReferrals = { showReferralScreen = true },
+                    onNavigateExperts = { showExpertsScreen = true }
                 )
             }
             TraderBottomTab.TIPS -> {
@@ -182,10 +248,16 @@ fun TraderMainScreen(
                     onNavigateWallet = { showWalletScreen = true },
                     onNavigateSubscriptions = { selectedTab = TraderBottomTab.SUBSCRIPTIONS },
                     onNavigateWatchlist = { selectedTab = TraderBottomTab.TIPS },
-                    onNavigateReferrals = {},
+                    onNavigateReferrals = { showReferralScreen = true },
+                    onNavigateJournal = { showJournalScreen = true },
+                    onNavigateCourses = { showCoursesScreen = true },
+                    onNavigateExperts = { showExpertsScreen = true },
+                    onNavigateSupport = { showSupportScreen = true },
+                    onNavigateStatutory = { showStatutoryScreen = true },
                     onLogout = onLogout
                 )
             }
         }
     }
 }
+

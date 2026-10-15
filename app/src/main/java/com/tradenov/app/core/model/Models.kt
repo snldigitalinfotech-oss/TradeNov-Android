@@ -240,3 +240,43 @@ data class Course(
     val thumbnailUrl: String? = null,
     val isPurchased: Boolean = false
 ) : Serializable
+
+data class TradeJournalEntry(
+    val id: String,
+    val symbol: String,
+    val marketSegment: MarketSegment,
+    val action: TradeAction,
+    val entryPrice: Double,
+    val exitPrice: Double,
+    val quantity: Int = 1,
+    val pnlRupees: Double,
+    val pnlPercent: Double,
+    val date: String,
+    val notes: String = "",
+    val emotion: String = "Disciplined"
+) : Serializable
+
+data class ReferredUser(
+    val id: String,
+    val name: String,
+    val dateJoined: String,
+    val status: String = "ACTIVE",
+    val commissionEarned: Double = 250.0
+) : Serializable
+
+data class ReferralData(
+    val referralCode: String = "NOVTRADER10",
+    val referralLink: String = "https://tradenov.com/join?ref=NOVTRADER10",
+    val totalReferred: Int = 12,
+    val totalEarnedRupees: Double = 3450.0,
+    val pendingPayoutRupees: Double = 650.0,
+    val commissionPercent: Int = 10,
+    val referrals: List<ReferredUser> = emptyList()
+) : Serializable
+
+data class FaqItem(
+    val question: String,
+    val answer: String,
+    val category: String = "General"
+) : Serializable
+

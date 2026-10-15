@@ -30,6 +30,11 @@ fun TraderAccountScreen(
     onNavigateSubscriptions: () -> Unit,
     onNavigateWatchlist: () -> Unit,
     onNavigateReferrals: () -> Unit,
+    onNavigateJournal: () -> Unit = {},
+    onNavigateCourses: () -> Unit = {},
+    onNavigateExperts: () -> Unit = {},
+    onNavigateSupport: () -> Unit = {},
+    onNavigateStatutory: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     val user by sessionManager.currentUser.collectAsState()
@@ -145,29 +150,60 @@ fun TraderAccountScreen(
                 )
                 AccountMenuItem(
                     icon = Icons.Outlined.Stars,
-                    title = "My Subscriptions",
+                    title = "VIP Subscriptions",
                     subtitle = "Manage active expert passes",
                     onClick = onNavigateSubscriptions
                 )
                 AccountMenuItem(
+                    icon = Icons.Outlined.MenuBook,
+                    title = "Trade Journal",
+                    subtitle = "Track trades, discipline & personal P&L",
+                    onClick = onNavigateJournal
+                )
+                AccountMenuItem(
                     icon = Icons.Outlined.BookmarkBorder,
                     title = "Watchlist",
-                    subtitle = "Saved market instruments",
+                    subtitle = "Saved market breakout instruments",
                     onClick = onNavigateWatchlist
                 )
                 AccountMenuItem(
                     icon = Icons.Outlined.Share,
-                    title = "Refer & Earn",
-                    subtitle = "Earn ₹200 on every friend signup",
+                    title = "Refer & Earn (10% Cashback)",
+                    subtitle = "Invite peers and earn instant credits",
                     onClick = onNavigateReferrals
                 )
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-            // App Preferences
+            // Learning & Analysts Desk
             item {
                 Text(
-                    text = "Preferences & Settings",
+                    text = "Academy & Research Analysts",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = LightTextMuted)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            item {
+                AccountMenuItem(
+                    icon = Icons.Outlined.VerifiedUser,
+                    title = "Verified SEBI Analysts",
+                    subtitle = "Explore verified research analysts & win rates",
+                    onClick = onNavigateExperts
+                )
+                AccountMenuItem(
+                    icon = Icons.Outlined.School,
+                    title = "Trader Academy & Courses",
+                    subtitle = "Masterclasses on Price Action & Option Greeks",
+                    onClick = onNavigateCourses
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+
+            // App Preferences & Support
+            item {
+                Text(
+                    text = "Preferences & Support",
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = LightTextMuted)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -188,15 +224,15 @@ fun TraderAccountScreen(
                 )
                 AccountMenuItem(
                     icon = Icons.Outlined.HelpOutline,
-                    title = "Help & Support",
-                    subtitle = "Contact 24/7 financial support",
-                    onClick = {}
+                    title = "Help & 24/7 Support Desk",
+                    subtitle = "WhatsApp, Telegram, and Ticket Support",
+                    onClick = onNavigateSupport
                 )
                 AccountMenuItem(
                     icon = Icons.Outlined.Shield,
-                    title = "Statutory Risk & Privacy",
-                    subtitle = "SEBI compliance guidelines",
-                    onClick = {}
+                    title = "Statutory Risk & Legal Policies",
+                    subtitle = "SEBI compliance, Terms, Privacy & Refunds",
+                    onClick = onNavigateStatutory
                 )
                 Spacer(modifier = Modifier.height(24.dp))
             }
