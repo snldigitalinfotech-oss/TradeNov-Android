@@ -176,15 +176,16 @@ fun TipDetailScreen(
                 }
             }
 
-            // Hero Card: Live Market Price & Profit/Loss
+            // Hero Card: Live Market Price, Signal Info & Profit/Loss
             item {
                 TradeNovCard(elevation = 2.dp) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        // Badges Row & Market Segment
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 if (tip.isUnlocked) {
                                     Surface(
@@ -193,7 +194,10 @@ fun TipDetailScreen(
                                     ) {
                                         Text(
                                             text = tip.action.name,
-                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Color.White),
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            ),
                                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                                         )
                                     }
@@ -228,30 +232,88 @@ fun TipDetailScreen(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 StatusBadge(status = if (tip.isUnlocked) tip.status.name else "PREMIUM")
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
+
                             Text(
-                                text = tip.signalName,
-                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                                text = "${tip.marketSegment.displayName} • ${tip.tradeType.name}",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
                             )
                         }
 
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text("Current Price", style = MaterialTheme.typography.labelSmall.copy(color = LightTextMuted))
-                            Text(
-                                text = "₹${tip.currentMarketPrice}",
-                                style = MaterialTheme.typography.headlineMedium.copy(
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            )
-                            if (tip.isUnlocked && tip.capturedEntryPrice > 0) {
-                                Text(
-                                    text = tip.displayProfitLossText,
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (tip.profitLossRupees >= 0) ProfitGreen else LossRed
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Full-width Signal Name
+                        Text(
+                            text = tip.signalName,
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // Dedicated Live CMP & Return Metric Strip
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = InputShape,
+                            color = MaterialTheme.colorScheme.surface,
+                            border = CardDefaults.outlinedCardBorder()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "Current Market Price",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = LightTextMuted,
+                                            fontSize = 11.sp
+                                        )
                                     )
-                                )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "₹${tip.currentMarketPrice}",
+                                        style = MaterialTheme.typography.headlineSmall.copy(
+                                            fontWeight = FontWeight.ExtraBold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    )
+                                }
+
+                                if (tip.isUnlocked && tip.capturedEntryPrice > 0) {
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        Text(
+                                            text = "Return / P&L",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                color = LightTextMuted,
+                                                fontSize = 11.sp
+                                            )
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Surface(
+                                            shape = PillShape,
+                                            color = if (tip.profitLossRupees >= 0) ProfitGreenLight else LossRedLight
+                                        ) {
+                                            Text(
+                                                text = tip.displayProfitLossText,
+                                                style = MaterialTheme.typography.labelMedium.copy(
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = if (tip.profitLossRupees >= 0) ProfitGreen else LossRed
+                                                ),
+                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -284,23 +346,23 @@ fun TipDetailScreen(
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column {
-                                Text("Target 1", style = MaterialTheme.typography.bodySmall.copy(color = LightTextMuted))
-                                Text("₹${tip.target1}", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = ProfitGreen))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Target 1", style = MaterialTheme.typography.bodySmall.copy(color = LightTextMuted, fontSize = 11.sp))
+                                Text("₹${tip.target1}", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = ProfitGreen))
                             }
-                            Column {
-                                Text("Target 2", style = MaterialTheme.typography.bodySmall.copy(color = LightTextMuted))
-                                Text("₹${tip.target2}", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = ProfitGreen))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Target 2", style = MaterialTheme.typography.bodySmall.copy(color = LightTextMuted, fontSize = 11.sp))
+                                Text("₹${tip.target2}", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = ProfitGreen))
                             }
-                            Column {
-                                Text("Target 3", style = MaterialTheme.typography.bodySmall.copy(color = LightTextMuted))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Target 3", style = MaterialTheme.typography.bodySmall.copy(color = LightTextMuted, fontSize = 11.sp))
                                 Text("₹${tip.target3}", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = ProfitGreen))
                             }
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text("Stop Loss", style = MaterialTheme.typography.bodySmall.copy(color = LightTextMuted))
-                                Text("₹${tip.stopLoss}", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = LossRed))
+                            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                                Text("Stop Loss", style = MaterialTheme.typography.bodySmall.copy(color = LightTextMuted, fontSize = 11.sp))
+                                Text("₹${tip.stopLoss}", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = LossRed))
                             }
                         }
                     }

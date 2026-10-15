@@ -868,17 +868,21 @@ fun TipListingCard(
                 }
 
                 Spacer(modifier = Modifier.width(10.dp))
-                Column {
+                Column(modifier = Modifier.weight(1f).padding(end = 6.dp)) {
                     Text(
                         text = tip.symbol,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                     Text(
                         text = "${tip.marketSegment.displayName} • ${if (tip.isUnlocked) tip.tradeType.name else "PREMIUM SETUP"}",
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp
-                        )
+                        ),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                 }
             }
@@ -928,17 +932,17 @@ fun TipListingCard(
                     .clip(InputShape)
                     .background(MaterialTheme.colorScheme.surface)
                     .padding(12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text("Entry Price", style = MaterialTheme.typography.labelSmall.copy(color = LightTextMuted))
                     Text("₹${tip.capturedEntryPrice}", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
                 }
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text("Target 1", style = MaterialTheme.typography.labelSmall.copy(color = LightTextMuted))
                     Text("₹${tip.target1}", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = ProfitGreen))
                 }
-                Column {
+                Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                     Text("Stop Loss", style = MaterialTheme.typography.labelSmall.copy(color = LightTextMuted))
                     Text("₹${tip.stopLoss}", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = LossRed))
                 }
@@ -950,49 +954,59 @@ fun TipListingCard(
                     .fillMaxWidth()
                     .clip(InputShape)
                     .background(OrangeLight.copy(alpha = 0.5f))
-                    .padding(12.dp),
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
+                ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.Lock,
                             contentDescription = null,
                             tint = OrangePrimary,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(15.dp)
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(5.dp))
                         Text(
-                            text = "Entry, Targets & Stop Loss Masked",
+                            text = "Targets & Limits Masked",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = OrangePrimary
-                            )
+                            ),
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Entry: ₹••••  |  Target: ₹••••  |  SL: ₹••••",
+                        text = "Entry: ₹••••  •  Target: ₹••••  •  SL: ₹••••",
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold
-                        )
+                        ),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                 }
 
                 Surface(
                     shape = PillShape,
-                    color = OrangePrimary
+                    color = OrangePrimary,
+                    shadowElevation = 1.dp
                 ) {
                     Text(
                         text = "Unlock • ₹${tip.basePrice.toInt()}",
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = Color.White,
+                            fontSize = 11.sp
                         ),
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
                     )
                 }
             }
@@ -1006,7 +1020,10 @@ fun TipListingCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1f).padding(end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
@@ -1047,7 +1064,7 @@ fun ExpertCompactCard(
         color = MaterialTheme.colorScheme.surface,
         border = CardDefaults.outlinedCardBorder(),
         modifier = Modifier
-            .width(220.dp)
+            .width(245.dp)
             .clickable { onClick() }
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
@@ -1068,7 +1085,7 @@ fun ExpertCompactCard(
                     )
                 }
                 Spacer(modifier = Modifier.width(10.dp))
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = expert.name,
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
