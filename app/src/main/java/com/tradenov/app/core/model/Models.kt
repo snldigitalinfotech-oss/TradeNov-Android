@@ -140,7 +140,31 @@ data class SubscriptionPlan(
     val telegramInviteUrl: String = "https://t.me/tradenov",
     val whatsappInviteUrl: String = "https://chat.whatsapp.com/TradeNovVIPAlerts",
     val isSubscribed: Boolean = false,
-    val expiresInDays: Int? = null
+    val expiresInDays: Int? = null,
+    val isActive: Boolean = true,
+    val subscribersCount: Int = 42,
+    val totalRevenue: Double = 62500.0
+) : Serializable
+
+data class ExpertSubscriber(
+    val id: String,
+    val traderName: String,
+    val planOrSignalName: String,
+    val marketSegment: MarketSegment,
+    val amountPaid: Double,
+    val purchaseDate: String,
+    val expiryDate: String,
+    val isActive: Boolean = true,
+    val autoRenew: Boolean = true
+) : Serializable
+
+data class SegmentPerformance(
+    val segment: MarketSegment,
+    val totalSignals: Int,
+    val winCount: Int,
+    val lossCount: Int,
+    val winRate: Double,
+    val netPoints: Double
 ) : Serializable
 
 data class Expert(

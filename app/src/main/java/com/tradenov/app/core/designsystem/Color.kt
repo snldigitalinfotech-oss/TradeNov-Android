@@ -12,8 +12,10 @@ val OrangeSubtle = Color(0xFFFFE8D1)
 val ProfitGreen = Color(0xFF10B981)
 val EmeraldGreen = ProfitGreen
 val ProfitGreenLight = Color(0xFFD1FAE5)
+val ProfitLight = ProfitGreenLight
 val LossRed = Color(0xFFEF4444)
 val LossRedLight = Color(0xFFFEE2E2)
+val LossLight = LossRedLight
 
 // Light Palette (Matching reference: clean white, soft surfaces, charcoal typography)
 val LightBackground = Color(0xFFFFFFFF)

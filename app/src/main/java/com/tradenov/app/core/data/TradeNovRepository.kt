@@ -44,6 +44,95 @@ class TradeNovRepository(
     private val _watchlistSymbols = MutableStateFlow<Set<String>>(setOf("RELIANCE", "NIFTY 50", "GOLD", "BTCUSDT"))
     val watchlistSymbols: StateFlow<Set<String>> = _watchlistSymbols.asStateFlow()
 
+    private val _expertPlans = MutableStateFlow<List<SubscriptionPlan>>(initialExpertPlans())
+    val expertPlans: StateFlow<List<SubscriptionPlan>> = _expertPlans.asStateFlow()
+
+    private val _subscribers = MutableStateFlow<List<ExpertSubscriber>>(initialSubscribers())
+    val subscribers: StateFlow<List<ExpertSubscriber>> = _subscribers.asStateFlow()
+
+    fun createExpertPlan(plan: SubscriptionPlan) {
+        _expertPlans.value = listOf(plan) + _expertPlans.value
+        addNotification(
+            NotificationItem(
+                id = UUID.randomUUID().toString(),
+                title = "VIP Plan Published: ${plan.planName}",
+                message = "Plan is now live and available for trader subscriptions.",
+                category = NotificationCategory.SUBSCRIPTIONS,
+                timestamp = "Just now"
+            )
+        )
+    }
+
+    fun updateExpertPlan(plan: SubscriptionPlan) {
+        _expertPlans.value = _expertPlans.value.map { if (it.id == plan.id) plan else it }
+    }
+
+    fun toggleExpertPlanStatus(planId: String) {
+        _expertPlans.value = _expertPlans.value.map {
+            if (it.id == planId) it.copy(isActive = !it.isActive) else it
+        }
+    }
+
+    fun deleteExpertPlan(planId: String) {
+        _expertPlans.value = _expertPlans.value.filter { it.id != planId }
+    }
+
+    suspend fun requestWithdrawal(amount: Double, accountDetails: String, method: String): Result<Boolean> {
+        delay(600)
+        val currentBal = sessionManager.currentUser.value?.walletBalance ?: 18450.0
+        if (amount > currentBal) return Result.failure(Exception("Insufficient balance"))
+        val newBal = currentBal - amount
+        val user = sessionManager.currentUser.value?.copy(walletBalance = newBal)
+        if (user != null) sessionManager.saveUser(user)
+        addNotification(
+            NotificationItem(
+                id = UUID.randomUUID().toString(),
+                title = "Payout Request Submitted: ₹${String.format("%,.0f", amount)}",
+                message = "Your request via $method ($accountDetails) is under processing. Payout reference generated.",
+                category = NotificationCategory.PAYMENTS,
+                timestamp = "Just now"
+            )
+        )
+        return Result.success(true)
+    }
+
+    fun getExpertSegmentPerformance(): List<SegmentPerformance> {
+        return listOf(
+            SegmentPerformance(
+                segment = MarketSegment.OPTIONS_INDEX,
+                totalSignals = 18,
+                winCount = 16,
+                lossCount = 2,
+                winRate = 88.8,
+                netPoints = 1420.0
+            ),
+            SegmentPerformance(
+                segment = MarketSegment.STOCKS,
+                totalSignals = 8,
+                winCount = 7,
+                lossCount = 1,
+                winRate = 87.5,
+                netPoints = 380.0
+            ),
+            SegmentPerformance(
+                segment = MarketSegment.COMMODITIES,
+                totalSignals = 4,
+                winCount = 4,
+                lossCount = 0,
+                winRate = 100.0,
+                netPoints = 650.0
+            ),
+            SegmentPerformance(
+                segment = MarketSegment.CRYPTO,
+                totalSignals = 3,
+                winCount = 2,
+                lossCount = 1,
+                winRate = 66.7,
+                netPoints = 210.0
+            )
+        )
+    }
+
     fun addJournalEntry(entry: TradeJournalEntry) {
         _journalEntries.value = listOf(entry) + _journalEntries.value
     }
@@ -860,6 +949,119 @@ class TradeNovRepository(
                 question = "How does the Refer & Earn 10% Program work?",
                 answer = "Share your unique referral code or link with other traders. Whenever a referred trader tops up their wallet or subscribes to a VIP pass, you earn a 10% instant cash commission directly in your wallet.",
                 category = "Referrals"
+            )
+        )
+    }
+
+    private fun initialExpertPlans(): List<SubscriptionPlan> {
+        return listOf(
+            SubscriptionPlan(
+                id = "plan_exp_01",
+                expertId = "exp_001",
+                expertName = "Kunal Sharma (SEBI RA)",
+                planName = "Nifty & BankNifty Intraday Alpha",
+                durationDays = 30,
+                originalPrice = 2999.0,
+                offerPrice = 1499.0,
+                description = "Daily 2-3 high probability momentum index options calls with tight stop-losses.",
+                includedMarkets = listOf("Index Options", "Nifty", "BankNifty"),
+                hasTelegramAccess = true,
+                hasWhatsAppAccess = true,
+                isActive = true,
+                subscribersCount = 142,
+                totalRevenue = 212858.0
+            ),
+            SubscriptionPlan(
+                id = "plan_exp_02",
+                expertId = "exp_001",
+                expertName = "Kunal Sharma (SEBI RA)",
+                planName = "Swing Cash & Breakout Stock Pass",
+                durationDays = 90,
+                originalPrice = 6999.0,
+                offerPrice = 3999.0,
+                description = "Positional and swing setups with 1:3+ Risk to Reward ratios and trailing stops.",
+                includedMarkets = listOf("Stocks", "Swing Cash"),
+                hasTelegramAccess = true,
+                hasWhatsAppAccess = true,
+                isActive = true,
+                subscribersCount = 68,
+                totalRevenue = 271932.0
+            ),
+            SubscriptionPlan(
+                id = "plan_exp_03",
+                expertId = "exp_001",
+                expertName = "Kunal Sharma (SEBI RA)",
+                planName = "1-Day Expiry Special VIP Pass",
+                durationDays = 1,
+                originalPrice = 499.0,
+                offerPrice = 199.0,
+                description = "Single-day access for weekly and monthly expiry zero-to-hero momentum setups.",
+                includedMarkets = listOf("Index Options", "Hero Zero"),
+                hasTelegramAccess = true,
+                hasWhatsAppAccess = true,
+                isActive = true,
+                subscribersCount = 385,
+                totalRevenue = 76615.0
+            )
+        )
+    }
+
+    private fun initialSubscribers(): List<ExpertSubscriber> {
+        return listOf(
+            ExpertSubscriber(
+                id = "sub_01",
+                traderName = "Vikram Malhotra",
+                planOrSignalName = "Nifty & BankNifty Intraday Alpha",
+                marketSegment = MarketSegment.OPTIONS_INDEX,
+                amountPaid = 1499.0,
+                purchaseDate = "12 Oct 2026",
+                expiryDate = "11 Nov 2026 (27 days left)",
+                isActive = true,
+                autoRenew = true
+            ),
+            ExpertSubscriber(
+                id = "sub_02",
+                traderName = "Ananya Sen",
+                planOrSignalName = "Swing Cash & Breakout Stock Pass",
+                marketSegment = MarketSegment.STOCKS,
+                amountPaid = 3999.0,
+                purchaseDate = "01 Oct 2026",
+                expiryDate = "31 Dec 2026 (77 days left)",
+                isActive = true,
+                autoRenew = true
+            ),
+            ExpertSubscriber(
+                id = "sub_03",
+                traderName = "Rajesh Gupta",
+                planOrSignalName = "NIFTY 24500 CE Expiry Special",
+                marketSegment = MarketSegment.OPTIONS_INDEX,
+                amountPaid = 99.0,
+                purchaseDate = "Today, 09:30 AM",
+                expiryDate = "Active (Single Call)",
+                isActive = true,
+                autoRenew = false
+            ),
+            ExpertSubscriber(
+                id = "sub_04",
+                traderName = "Pooja Deshmukh",
+                planOrSignalName = "Nifty & BankNifty Intraday Alpha",
+                marketSegment = MarketSegment.OPTIONS_INDEX,
+                amountPaid = 1499.0,
+                purchaseDate = "28 Sep 2026",
+                expiryDate = "28 Oct 2026 (13 days left)",
+                isActive = true,
+                autoRenew = true
+            ),
+            ExpertSubscriber(
+                id = "sub_05",
+                traderName = "Amitabh Nair",
+                planOrSignalName = "Commodity Crude & Gold Alpha",
+                marketSegment = MarketSegment.COMMODITIES,
+                amountPaid = 1999.0,
+                purchaseDate = "15 Sep 2026",
+                expiryDate = "15 Oct 2026 (Expired)",
+                isActive = false,
+                autoRenew = false
             )
         )
     }

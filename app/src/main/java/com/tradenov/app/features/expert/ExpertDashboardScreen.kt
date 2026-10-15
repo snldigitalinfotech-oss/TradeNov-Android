@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tradenov.app.core.data.TradeNovRepository
 import com.tradenov.app.core.designsystem.*
+import androidx.compose.foundation.clickable
 import com.tradenov.app.core.model.TipStatus
 
 @Composable
@@ -24,9 +25,14 @@ fun ExpertDashboardScreen(
     repository: TradeNovRepository,
     onNavigateAddTip: () -> Unit,
     onNavigateManageTips: () -> Unit,
-    onNavigateEarnings: () -> Unit
+    onNavigateEarnings: () -> Unit,
+    onNavigatePlans: () -> Unit = {},
+    onNavigateSubscribers: () -> Unit = {},
+    onNavigatePerformance: () -> Unit = {}
 ) {
     val tips by repository.tips.collectAsState()
+    val plans by repository.expertPlans.collectAsState()
+    val subscribers by repository.subscribers.collectAsState()
     val runningTips = remember(tips) { tips.filter { it.status == TipStatus.RUNNING } }
 
     Scaffold(
@@ -135,27 +141,35 @@ fun ExpertDashboardScreen(
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-            // Quick Stats Grid
+            // Quick Stats Grid (Interactive & Clickable)
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Surface(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(CardShape)
+                            .clickable { onNavigateSubscribers() },
                         shape = CardShape,
                         color = MaterialTheme.colorScheme.surface,
                         border = CardDefaults.outlinedCardBorder()
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
-                            Text("Active Subscribers", style = MaterialTheme.typography.bodySmall.copy(color = LightTextMuted))
+                            Text("Subscribers", style = MaterialTheme.typography.bodySmall.copy(color = LightTextMuted))
                             Spacer(modifier = Modifier.height(4.dp))
                             Text("2,150", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text("View Roster ›", style = MaterialTheme.typography.labelSmall.copy(color = OrangePrimary, fontWeight = FontWeight.Bold, fontSize = 9.sp))
                         }
                     }
 
                     Surface(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(CardShape)
+                            .clickable { onNavigatePerformance() },
                         shape = CardShape,
                         color = MaterialTheme.colorScheme.surface,
                         border = CardDefaults.outlinedCardBorder()
@@ -164,11 +178,16 @@ fun ExpertDashboardScreen(
                             Text("Win Rate", style = MaterialTheme.typography.bodySmall.copy(color = LightTextMuted))
                             Spacer(modifier = Modifier.height(4.dp))
                             Text("85.2%", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = ProfitGreen))
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text("Audited ›", style = MaterialTheme.typography.labelSmall.copy(color = ProfitGreen, fontWeight = FontWeight.Bold, fontSize = 9.sp))
                         }
                     }
 
                     Surface(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(CardShape)
+                            .clickable { onNavigateManageTips() },
                         shape = CardShape,
                         color = MaterialTheme.colorScheme.surface,
                         border = CardDefaults.outlinedCardBorder()
@@ -177,10 +196,53 @@ fun ExpertDashboardScreen(
                             Text("Running Calls", style = MaterialTheme.typography.bodySmall.copy(color = LightTextMuted))
                             Spacer(modifier = Modifier.height(4.dp))
                             Text("${runningTips.size}", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = OrangePrimary))
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text("Manage ›", style = MaterialTheme.typography.labelSmall.copy(color = OrangePrimary, fontWeight = FontWeight.Bold, fontSize = 9.sp))
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(18.dp))
+            }
+
+            // VIP Subscription Passes Studio Card
+            item {
+                Surface(
+                    shape = CardShape,
+                    color = MaterialTheme.colorScheme.surface,
+                    border = CardDefaults.outlinedCardBorder(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(CardShape)
+                        .clickable { onNavigatePlans() }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                shape = CircleShape,
+                                color = OrangeLight,
+                                modifier = Modifier.size(40.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(Icons.Default.WorkspacePremium, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(22.dp))
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text("VIP Subscription Passes Studio", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                                Text("${plans.size} Active recurring pass tiers • 90% Rev Share", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp))
+                            }
+                        }
+
+                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                Spacer(modifier = Modifier.height(18.dp))
             }
 
             // Quick Action Buttons
@@ -201,7 +263,43 @@ fun ExpertDashboardScreen(
                         modifier = Modifier.weight(1f)
                     )
                 }
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(18.dp))
+            }
+
+            // Real-Time Syndication Desk Status Card
+            item {
+                Surface(
+                    shape = CardShape,
+                    color = MaterialTheme.colorScheme.surface,
+                    border = CardDefaults.outlinedCardBorder(),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Campaign, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Multi-Channel Syndication Desk", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                            }
+                            Surface(shape = PillShape, color = ProfitLight) {
+                                Text("LIVE SYNC", modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp), style = MaterialTheme.typography.labelSmall.copy(color = ProfitGreen, fontWeight = FontWeight.ExtraBold, fontSize = 9.sp))
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Telegram VIP Desk: @TradeNovVIP", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp))
+                            Text("WhatsApp VIP: Connected", style = MaterialTheme.typography.bodySmall.copy(color = ProfitGreen, fontWeight = FontWeight.Bold, fontSize = 11.sp))
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
 
             // Running Tips Quick Follow-Up List
