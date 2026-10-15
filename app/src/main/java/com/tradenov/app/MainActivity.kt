@@ -164,6 +164,9 @@ class MainActivity : ComponentActivity() {
                             TraderMainScreen(
                                 repository = repository,
                                 sessionManager = sessionManager,
+                                onNavigateExpertDesk = {
+                                    currentDestination = AppDestination.EXPERT_MAIN
+                                },
                                 onLogout = {
                                     authViewModel.logout {
                                         currentDestination = AppDestination.LOGIN
@@ -176,6 +179,9 @@ class MainActivity : ComponentActivity() {
                             ExpertMainScreen(
                                 repository = repository,
                                 sessionManager = sessionManager,
+                                onNavigateTraderHome = {
+                                    currentDestination = AppDestination.TRADER_MAIN
+                                },
                                 onLogout = {
                                     authViewModel.logout {
                                         currentDestination = AppDestination.LOGIN

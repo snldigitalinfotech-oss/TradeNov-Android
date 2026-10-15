@@ -35,6 +35,7 @@ fun TraderAccountScreen(
     onNavigateExperts: () -> Unit = {},
     onNavigateSupport: () -> Unit = {},
     onNavigateStatutory: () -> Unit = {},
+    onNavigateExpertDesk: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     val user by sessionManager.currentUser.collectAsState()
@@ -196,6 +197,25 @@ fun TraderAccountScreen(
                     title = "Trader Academy & Courses",
                     subtitle = "Masterclasses on Price Action & Option Greeks",
                     onClick = onNavigateCourses
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+
+            // Professional Analyst & Creator Studio
+            item {
+                Text(
+                    text = "Institutional & Analyst Studio",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = LightTextMuted)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            item {
+                AccountMenuItem(
+                    icon = Icons.Outlined.Analytics,
+                    title = "Expert Studio & Trading Desk",
+                    subtitle = "Publish market signals, manage VIP passes & track win rates",
+                    onClick = onNavigateExpertDesk
                 )
                 Spacer(modifier = Modifier.height(20.dp))
             }

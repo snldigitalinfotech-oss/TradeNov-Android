@@ -35,6 +35,7 @@ enum class TraderBottomTab(
 fun TraderMainScreen(
     repository: TradeNovRepository,
     sessionManager: SessionManager,
+    onNavigateExpertDesk: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
@@ -254,6 +255,7 @@ fun TraderMainScreen(
                     onNavigateExperts = { showExpertsScreen = true },
                     onNavigateSupport = { showSupportScreen = true },
                     onNavigateStatutory = { showStatutoryScreen = true },
+                    onNavigateExpertDesk = onNavigateExpertDesk,
                     onLogout = onLogout
                 )
             }

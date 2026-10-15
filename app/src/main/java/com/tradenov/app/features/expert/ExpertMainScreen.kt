@@ -42,6 +42,7 @@ enum class ExpertSubScreen {
 fun ExpertMainScreen(
     repository: TradeNovRepository,
     sessionManager: SessionManager,
+    onNavigateTraderHome: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
@@ -158,7 +159,8 @@ fun ExpertMainScreen(
                         onNavigateEarnings = { selectedTab = ExpertBottomTab.EARNINGS },
                         onNavigatePlans = { currentSubScreen = ExpertSubScreen.PLANS },
                         onNavigateSubscribers = { currentSubScreen = ExpertSubScreen.SUBSCRIBERS },
-                        onNavigatePerformance = { currentSubScreen = ExpertSubScreen.PERFORMANCE }
+                        onNavigatePerformance = { currentSubScreen = ExpertSubScreen.PERFORMANCE },
+                        onNavigateTraderHome = onNavigateTraderHome
                     )
                 }
                 ExpertBottomTab.ADD_TIP -> {
@@ -186,6 +188,7 @@ fun ExpertMainScreen(
                         onNavigateSubscriptions = { currentSubScreen = ExpertSubScreen.PLANS },
                         onNavigateWatchlist = {},
                         onNavigateReferrals = {},
+                        onNavigateExpertDesk = onNavigateTraderHome,
                         onLogout = onLogout
                     )
                 }

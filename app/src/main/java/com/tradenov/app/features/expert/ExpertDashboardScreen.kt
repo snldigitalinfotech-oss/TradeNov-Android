@@ -28,7 +28,8 @@ fun ExpertDashboardScreen(
     onNavigateEarnings: () -> Unit,
     onNavigatePlans: () -> Unit = {},
     onNavigateSubscribers: () -> Unit = {},
-    onNavigatePerformance: () -> Unit = {}
+    onNavigatePerformance: () -> Unit = {},
+    onNavigateTraderHome: () -> Unit = {}
 ) {
     val tips by repository.tips.collectAsState()
     val plans by repository.expertPlans.collectAsState()
@@ -42,7 +43,7 @@ fun ExpertDashboardScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surface)
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .padding(horizontal = 20.dp, vertical = 14.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -60,17 +61,28 @@ fun ExpertDashboardScreen(
                         )
                     }
 
-                    Surface(
-                        shape = PillShape,
-                        color = OrangeLight
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = PillShape,
+                            color = OrangeLight
                         ) {
-                            Icon(Icons.Default.Verified, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("VERIFIED", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = OrangePrimary))
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.Verified, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(14.dp))
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Text("VERIFIED", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = OrangePrimary, fontSize = 9.sp))
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
+                        OutlinedButton(
+                            onClick = onNavigateTraderHome,
+                            shape = PillShape,
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
+                            modifier = Modifier.height(28.dp)
+                        ) {
+                            Text("Trader Mode ›", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = OrangePrimary)
                         }
                     }
                 }
