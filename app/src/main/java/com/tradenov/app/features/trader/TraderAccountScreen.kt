@@ -188,8 +188,8 @@ fun TraderAccountScreen(
             item {
                 AccountMenuItem(
                     icon = Icons.Outlined.VerifiedUser,
-                    title = "Verified SEBI Analysts",
-                    subtitle = "Explore verified research analysts & win rates",
+                    title = "Top Market Analysts",
+                    subtitle = "Explore certified technical analysts & win rates",
                     onClick = onNavigateExperts
                 )
                 AccountMenuItem(
@@ -250,8 +250,8 @@ fun TraderAccountScreen(
                 )
                 AccountMenuItem(
                     icon = Icons.Outlined.Shield,
-                    title = "Statutory Risk & Legal Policies",
-                    subtitle = "SEBI compliance, Terms, Privacy & Refunds",
+                    title = "Market Risk & Legal Policies",
+                    subtitle = "Risk Disclosures, Terms, Privacy & Refunds",
                     onClick = onNavigateStatutory
                 )
                 Spacer(modifier = Modifier.height(24.dp))

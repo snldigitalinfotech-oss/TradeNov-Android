@@ -89,7 +89,7 @@ fun TraderCoursesScreen(
                         Column {
                             Text("TradeNov Trader Academy", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                             Text(
-                                "Master technical breakouts and institutional derivatives directly from SEBI Research Analysts.",
+                                "Master technical breakouts and price action charting directly from experienced analysts.",
                                 style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                             )
                         }
@@ -163,7 +163,7 @@ fun CourseCard(
                         color = OrangeLight
                     ) {
                         Text(
-                            text = "SEBI MASTERCLASS",
+                            text = "PRO MASTERCLASS",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = OrangePrimary,

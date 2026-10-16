@@ -54,7 +54,7 @@ fun ExpertPerformanceScreen(
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                         )
                         Text(
-                            text = "SEBI compliance audited track record & win ratios",
+                            text = "Transparent performance records & win ratios",
                             style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                     }
@@ -126,7 +126,7 @@ fun ExpertPerformanceScreen(
                                 ) {
                                     Icon(Icons.Default.Verified, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("SEBI VERIFIED", style = MaterialTheme.typography.labelSmall.copy(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 9.sp))
+                                    Text("VERIFIED EXPERT", style = MaterialTheme.typography.labelSmall.copy(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 9.sp))
                                 }
                             }
                         }
@@ -269,7 +269,7 @@ fun ExpertPerformanceScreen(
                         Icon(Icons.Default.Shield, contentDescription = null, tint = OrangePrimary, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "SEBI Research Analyst Compliance: All historical signals, published prices, and trailing target updates are immutably logged with timestamp verification.",
+                            text = "Transparent Performance Log: All historical signals, published prices, and trailing target updates are immutably logged with timestamp verification.",
                             style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                         )
                     }

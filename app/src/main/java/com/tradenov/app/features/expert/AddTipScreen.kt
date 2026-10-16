@@ -510,7 +510,7 @@ fun AddTipScreen(
                             status = TipStatus.RUNNING,
                             isUnlocked = true,
                             expertId = "exp_001",
-                            expertName = "Kunal Sharma (SEBI RA)",
+                            expertName = "Kunal Sharma (Technical Analyst)",
                             expertRating = 4.9,
                             createdAt = "Just now",
                             timeline = listOf(

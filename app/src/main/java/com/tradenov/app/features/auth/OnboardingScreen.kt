@@ -38,7 +38,7 @@ fun OnboardingScreen(
     val pages = listOf(
         OnboardingPageData(
             title = "Expert Trading Insights",
-            subtitle = "Get high-probability intraday & swing calls verified by top SEBI registered analysts and CMT charterholders.",
+            subtitle = "Get high-probability intraday & swing calls from top technical analysts and price action chartists.",
             icon = Icons.Default.Analytics
         ),
         OnboardingPageData(

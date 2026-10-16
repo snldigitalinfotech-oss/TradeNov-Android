@@ -171,7 +171,7 @@ class TradeNovRepository(
         val role = if (isExpert) UserRole.EXPERT else UserRole.TRADER
         val user = User(
             id = if (isExpert) "exp_001" else "usr_001",
-            name = if (isExpert) "Kunal Sharma (SEBI RA)" else "Aman Verma",
+            name = if (isExpert) "Kunal Sharma (Technical Analyst)" else "Aman Verma",
             email = emailOrPhone,
             phone = "+91 98765 43210",
             role = role,
@@ -521,7 +521,7 @@ class TradeNovRepository(
                 status = TipStatus.RUNNING,
                 isUnlocked = true,
                 expertId = "exp_001",
-                expertName = "Kunal Sharma (SEBI RA)",
+                expertName = "Kunal Sharma (Technical Analyst)",
                 expertRating = 4.9,
                 createdAt = "Today, 09:25 AM",
                 timeline = listOf(
@@ -578,7 +578,7 @@ class TradeNovRepository(
                 status = TipStatus.TARGET_HIT,
                 isUnlocked = false,
                 expertId = "exp_001",
-                expertName = "Kunal Sharma (SEBI RA)",
+                expertName = "Kunal Sharma (Technical Analyst)",
                 expertRating = 4.9,
                 createdAt = "Today, 11:10 AM"
             ),
@@ -642,7 +642,7 @@ class TradeNovRepository(
             SubscriptionPlan(
                 id = "plan_kunal_week",
                 expertId = "exp_001",
-                expertName = "Kunal Sharma (SEBI RA)",
+                expertName = "Kunal Sharma (Technical Analyst)",
                 planName = "Elite Options Weekly VIP",
                 durationDays = 7,
                 originalPrice = 1499.0,
@@ -655,7 +655,7 @@ class TradeNovRepository(
             SubscriptionPlan(
                 id = "plan_kunal_month",
                 expertId = "exp_001",
-                expertName = "Kunal Sharma (SEBI RA)",
+                expertName = "Kunal Sharma (Technical Analyst)",
                 planName = "Pro Trader Monthly Pass",
                 durationDays = 30,
                 originalPrice = 4999.0,
@@ -686,8 +686,8 @@ class TradeNovRepository(
         return listOf(
             Expert(
                 id = "exp_001",
-                name = "Kunal Sharma (SEBI RA)",
-                tagline = "SEBI Registered Research Analyst • 11+ Yrs Ex-Institutional Desk",
+                name = "Kunal Sharma (Technical Analyst)",
+                tagline = "Senior Technical Analyst • 11+ Yrs Charting Experience",
                 bio = "Specializing in High Probability Index Options & Market Geometry. Proven 84.5% precision win-rate over 3,000+ verified trades.",
                 experienceYears = 11,
                 markets = listOf("Index Options", "BankNifty", "Stock Futures"),
@@ -819,7 +819,7 @@ class TradeNovRepository(
                 title = "How to Read Option Chain & Spot FII Trap Zones",
                 summary = "Discover how professional institutional traders analyze Open Interest unwinding to predict massive expiry breakouts.",
                 content = "Option chain data provides crucial clues about where institutional market makers have placed their risk limits...",
-                authorName = "Kunal Sharma (SEBI RA)",
+                authorName = "Kunal Sharma (Technical Analyst)",
                 publishedAt = "Yesterday"
             ),
             Blog(
@@ -839,7 +839,7 @@ class TradeNovRepository(
                 id = "crs_001",
                 title = "Complete Masterclass: Price Action & Market Profile",
                 description = "Zero to advanced mastery of price action, support-resistance dynamics, order flow, and risk management.",
-                expertName = "Kunal Sharma (SEBI RA)",
+                expertName = "Kunal Sharma (Technical Analyst)",
                 price = 1999.0,
                 durationHours = 18,
                 totalLessons = 32,
@@ -927,7 +927,7 @@ class TradeNovRepository(
         return listOf(
             FaqItem(
                 question = "How do Tip Unlocks work on TradeNov?",
-                answer = "Each premium setup is published by SEBI registered research analysts. You can unlock single setups using your wallet balance, or get unlimited free access to all setups with a VIP Subscription Pass.",
+                answer = "Each setup is published by independent experienced technical analysts. You can unlock single setups starting at ₹99 - ₹299 using your wallet balance, with zero monthly lock-in or forced subscriptions.",
                 category = "Tips & Setups"
             ),
             FaqItem(
@@ -958,7 +958,7 @@ class TradeNovRepository(
             SubscriptionPlan(
                 id = "plan_exp_01",
                 expertId = "exp_001",
-                expertName = "Kunal Sharma (SEBI RA)",
+                expertName = "Kunal Sharma (Technical Analyst)",
                 planName = "Nifty & BankNifty Intraday Alpha",
                 durationDays = 30,
                 originalPrice = 2999.0,
@@ -974,7 +974,7 @@ class TradeNovRepository(
             SubscriptionPlan(
                 id = "plan_exp_02",
                 expertId = "exp_001",
-                expertName = "Kunal Sharma (SEBI RA)",
+                expertName = "Kunal Sharma (Technical Analyst)",
                 planName = "Swing Cash & Breakout Stock Pass",
                 durationDays = 90,
                 originalPrice = 6999.0,
@@ -990,7 +990,7 @@ class TradeNovRepository(
             SubscriptionPlan(
                 id = "plan_exp_03",
                 expertId = "exp_001",
-                expertName = "Kunal Sharma (SEBI RA)",
+                expertName = "Kunal Sharma (Technical Analyst)",
                 planName = "1-Day Expiry Special VIP Pass",
                 durationDays = 1,
                 originalPrice = 499.0,

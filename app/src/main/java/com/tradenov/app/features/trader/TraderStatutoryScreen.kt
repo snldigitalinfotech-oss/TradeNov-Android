@@ -21,7 +21,7 @@ fun TraderStatutoryScreen(
     onBack: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("SEBI Risk", "Terms", "Privacy", "Refunds")
+    val tabs = listOf("Risk", "Terms", "Privacy", "Refunds")
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -82,12 +82,12 @@ fun TraderStatutoryScreen(
                 TradeNovCard {
                     when (selectedTab) {
                         0 -> {
-                            Text("SEBI Compliance & Risk Disclosure", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                            Text("Market Risk & Regulatory Disclosure", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "1. Securities and derivatives markets are subject to substantial market risks. TradeNov acts strictly as a technology aggregation and analytical platform connecting certified SEBI Research Analysts (RA) and traders.\n\n" +
-                                        "2. Past performance is not indicative of future returns. The signals and analysis provided do not guarantee capital protection or positive returns.\n\n" +
-                                        "3. 9 out of 10 individual traders in equity futures and options segment incur net losses (based on SEBI study). Traders are advised to assess their risk appetite and adhere strictly to stop-loss guidelines.",
+                                text = "1. Securities and derivatives markets are subject to substantial market risks. TradeNov is an independent technology marketplace connecting independent technical analysts and retail traders. TradeNov is NOT a SEBI registered entity, advisory, or stockbroker.\n\n" +
+                                        "2. Past performance is not indicative of future returns. The signals and analysis provided are for research and educational purposes only and do not guarantee profits or capital protection.\n\n" +
+                                        "3. Standard Regulatory Risk Study: 9 out of 10 individual traders in equity futures and options segment incur net losses. Traders are advised to assess their risk appetite and adhere strictly to stop-loss guidelines.",
                                 style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
                             )
                         }

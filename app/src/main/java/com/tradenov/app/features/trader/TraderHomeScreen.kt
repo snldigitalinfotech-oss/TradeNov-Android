@@ -355,7 +355,7 @@ fun TraderHomeScreen(
                         )
                         QuickActionItem(
                             icon = Icons.Default.VerifiedUser,
-                            label = "SEBI Experts",
+                            label = "Top Analysts",
                             onClick = onNavigateExperts
                         )
                         QuickActionItem(
@@ -506,7 +506,7 @@ fun TraderHomeScreen(
                     EmptyStateView(
                         icon = Icons.Default.TrendingUp,
                         title = "No Live Tips in this segment",
-                        description = "Check back soon as SEBI analysts publish new live market breakouts."
+                        description = "Check back soon as analysts publish new live market breakouts."
                     )
                 }
             } else {
@@ -525,7 +525,7 @@ fun TraderHomeScreen(
                 }
             }
 
-            // Featured SEBI Experts Section
+            // Featured Top Analysts Section
             item {
                 Spacer(modifier = Modifier.height(28.dp))
                 Column(modifier = Modifier.padding(horizontal = 20.dp)) {
@@ -540,7 +540,7 @@ fun TraderHomeScreen(
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                             )
                             Text(
-                                text = "SEBI Registered Research Analysts & CMTs",
+                                text = "Experienced Technical Analysts & Chartists",
                                 style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                             )
                         }

@@ -8,7 +8,7 @@
 
 **TradeNov** (*Navigate. Trade. Grow.*) is a financial technology application and verified trading tips marketplace for **Stock Market, Futures & Options, Commodity, Forex, and Cryptocurrency**.
 
-Built from the ground up following the approved mobile UI/UX visual language (vibrant orange accent `#FF7A00`, crisp white backgrounds, soft elevations, rounded card hierarchy, and minimal navigation), TradeNov delivers a high-conviction mobile experience for both retail traders and SEBI-registered analysts.
+Built from the ground up following the approved mobile UI/UX visual language (vibrant orange accent `#FF7A00`, crisp white backgrounds, soft elevations, rounded card hierarchy, and minimal navigation), TradeNov delivers a high-conviction mobile experience for both retail traders and independent technical analysts.
 
 ---
 
@@ -17,7 +17,7 @@ Built from the ground up following the approved mobile UI/UX visual language (vi
 TradeNov utilizes a **unified authentication portal**. After login, the application automatically inspects the user's role and routes them accordingly:
 
 1. **TRADER PANEL (`role = TRADER`)**:
-   - **Trader Home Dashboard**: Live market ticker (Nifty 50, BankNifty, Sensex, BTC, ETH, Gold), quick actions (Add Money, Browse Tips, VIP Plans, Watchlist), category filter chips, today's top tips, and featured SEBI analysts.
+   - **Trader Home Dashboard**: Live market ticker (Nifty 50, BankNifty, Sensex, BTC, ETH, Gold), quick actions (Add Money, Browse Tips, Pay-Per-Tip from ₹99, Watchlist), category filter chips, today's top tips, and featured technical analysts.
    - **Tips Marketplace**: Filter by market (Stocks, Index Options, Stock Options, Commodity, Forex, Crypto), trade type (Intraday, Swing, Delivery), and status (Running, Target Hit, Closed).
    - **Tip Details & Execution Brackets**: Real-time CMP vs captured entry price, target 1/2/3, stop loss, live P/L indicator, and vertical execution timeline.
    - **Social VIP Broadcast Integration**: Instant 1-click access to official VIP Telegram channels and WhatsApp VIP communities for real-time target alerts.
@@ -75,4 +75,4 @@ All unit tests validate trader login, expert role redirection, pending approval 
 ## 🔒 Security & Statutory Disclaimers
 - All API tokens and sensitive session credentials are saved via encrypted storage abstractions.
 - Live market prices are proxied securely through the backend server.
-- All trading content includes SEBI educational and statutory risk disclaimers.
+- All trading content includes statutory market risk disclaimers and educational disclosure notes. TradeNov is NOT a SEBI-registered advisory entity.

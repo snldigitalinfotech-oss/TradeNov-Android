@@ -398,7 +398,7 @@ fun ExpertPlansScreen(
                             val newPlan = SubscriptionPlan(
                                 id = "plan_${UUID.randomUUID()}",
                                 expertId = "exp_001",
-                                expertName = "Kunal Sharma (SEBI RA)",
+                                expertName = "Kunal Sharma (Technical Analyst)",
                                 planName = planName.ifBlank { "VIP Trading Pass" },
                                 durationDays = durationDays,
                                 originalPrice = oPrice,

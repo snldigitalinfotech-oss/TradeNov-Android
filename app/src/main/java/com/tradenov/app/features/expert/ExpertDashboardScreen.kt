@@ -56,7 +56,7 @@ fun ExpertDashboardScreen(
                             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Text(
-                            text = "SEBI Registered Analyst Portal",
+                            text = "Verified Market Analyst Desk",
                             style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                     }

@@ -61,7 +61,7 @@ fun PendingApprovalScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Thank you for registering as a TradeNov Analyst. To maintain institutional standards and compliance, our verification team is reviewing your SEBI / professional credentials. This usually takes 24-48 business hours.",
+                text = "Thank you for registering as a TradeNov Analyst. To maintain high-quality setups for retail traders, our verification team is reviewing your professional trading credentials and track record. This usually takes 24-48 business hours.",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 22.sp

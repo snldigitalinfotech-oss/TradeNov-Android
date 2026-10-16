@@ -48,7 +48,7 @@ fun TraderExpertsScreen(
                 }
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "Verified SEBI Analysts",
+                    text = "Top Market Analysts",
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                 )
             }
@@ -84,9 +84,9 @@ fun TraderExpertsScreen(
                         }
                         Spacer(modifier = Modifier.width(14.dp))
                         Column {
-                            Text("100% SEBI Registered Desk", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                            Text("Verified Technical Analysts", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                             Text(
-                                "TradeNov strictly partners with audited SEBI Research Analysts (RA) and CMT certified market strategists.",
+                                "TradeNov connects traders with experienced technical analysts, chartists, and market strategists.",
                                 style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                             )
                         }
@@ -184,13 +184,13 @@ fun ExpertDetailedCard(
                             Spacer(modifier = Modifier.width(4.dp))
                             Icon(
                                 imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Verified SEBI RA",
+                                contentDescription = "Verified Analyst",
                                 tint = EmeraldGreen,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
                         Text(
-                            text = "SEBI Reg: INH000008${(100..999).random()} • ${expert.experienceYears}+ Yrs Exp",
+                            text = "Technical Analyst • ${expert.experienceYears}+ Yrs Exp",
                             style = MaterialTheme.typography.bodySmall.copy(color = LightTextMuted, fontSize = 11.sp)
                         )
                     }

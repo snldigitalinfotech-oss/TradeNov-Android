@@ -180,7 +180,7 @@ fun TipsMarketplaceScreen(
                         else -> "No tips matching criteria"
                     }
                     val emptyDesc = when (selectedTab) {
-                        0 -> "SEBI analysts publish fresh setups during active market hours."
+                        0 -> "Top analysts publish fresh setups during active market hours."
                         1 -> "Subscribe to expert monthly plans to automatically unlock VIP tips."
                         2 -> "Unlocked trades and verified calls will appear here permanently."
                         3 -> "Past closed and target-achieved setups will be cataloged here."

@@ -172,7 +172,7 @@ fun TraderReferralScreen(
                                 action = Intent.ACTION_SEND
                                 putExtra(
                                     Intent.EXTRA_TEXT,
-                                    "Join TradeNov with my exclusive code ${referralData.referralCode} and trade with verified SEBI Research Analysts! Sign up here: ${referralData.referralLink}"
+                                    "Join TradeNov with my exclusive code ${referralData.referralCode} and trade with verified Technical Analysts! Pay-per-tip starts at just ₹99: ${referralData.referralLink}"
                                 )
                                 type = "text/plain"
                             }

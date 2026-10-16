@@ -50,6 +50,14 @@ class FakeTradeNovApiService : TradeNovApiService {
     override suspend fun requestWithdrawal(req: WithdrawalRequestDto): Response<ApiResponse<Any>> {
         return Response.success(ApiResponse(true, "OK"))
     }
+
+    override suspend fun forgotPassword(req: ForgotPasswordRequest): Response<ApiResponse<Any>> {
+        return Response.success(ApiResponse(true, "OK"))
+    }
+
+    override suspend fun resetPassword(req: ResetPasswordRequest): Response<ApiResponse<Any>> {
+        return Response.success(ApiResponse(true, "OK"))
+    }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -98,7 +106,7 @@ class TradeNovUnitTest {
     fun testExpertLoginRoleRedirect() = runTest(testDispatcher) {
         val expertDto = UserDto(
             id = "exp_001",
-            name = "Kunal Sharma (SEBI RA)",
+            name = "Kunal Sharma (Technical Analyst)",
             email = "kunal.expert@tradenov.com",
             phone = "+91 98765 43210",
             role = "EXPERT",
@@ -187,7 +195,7 @@ class TradeNovUnitTest {
             status = TipStatus.RUNNING,
             isUnlocked = true,
             expertId = "exp_001",
-            expertName = "Kunal Sharma (SEBI RA)",
+            expertName = "Kunal Sharma (Technical Analyst)",
             expertRating = 4.9,
             createdAt = "Just now"
         )
