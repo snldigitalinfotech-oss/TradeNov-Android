@@ -43,6 +43,8 @@ fun TraderAccountScreen(
 
     var showThemeDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
+    var showAvatarDialog by remember { mutableStateOf(false) }
+    var customAvatarInput by remember { mutableStateOf("") }
     var selectedLanguage by remember { mutableStateOf("English") }
 
     Scaffold(
@@ -68,7 +70,7 @@ fun TraderAccountScreen(
                 .padding(horizontal = 20.dp),
             contentPadding = PaddingValues(top = 10.dp, bottom = 120.dp)
         ) {
-            // Profile Card (Matching Reference Screen 18)
+            // Profile Card (Matching Reference Screen with Profile Picture Change)
             item {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -80,20 +82,51 @@ fun TraderAccountScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Clickable Avatar with Camera Icon Overlay
                         Box(
                             modifier = Modifier
-                                .size(56.dp)
-                                .clip(CircleShape)
-                                .background(OrangeLight),
+                                .size(64.dp)
+                                .clickable { showAvatarDialog = true },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = (user?.name?.take(1) ?: "T").uppercase(),
-                                style = MaterialTheme.typography.headlineSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = OrangePrimary
+                            Box(
+                                modifier = Modifier
+                                    .size(58.dp)
+                                    .clip(CircleShape)
+                                    .background(EmeraldLight),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (!user?.avatarUrl.isNullOrBlank()) {
+                                    Text(
+                                        text = user!!.avatarUrl!!,
+                                        style = MaterialTheme.typography.headlineMedium
+                                    )
+                                } else {
+                                    Text(
+                                        text = (user?.name?.take(1) ?: "T").uppercase(),
+                                        style = MaterialTheme.typography.headlineSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = EmeraldPrimary
+                                        )
+                                    )
+                                }
+                            }
+                            // Mini camera badge overlay
+                            Box(
+                                modifier = Modifier
+                                    .size(22.dp)
+                                    .align(Alignment.BottomEnd)
+                                    .clip(CircleShape)
+                                    .background(EmeraldPrimary),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CameraAlt,
+                                    contentDescription = "Change Photo",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(12.dp)
                                 )
-                            )
+                            }
                         }
 
                         Spacer(modifier = Modifier.width(14.dp))
@@ -110,20 +143,24 @@ fun TraderAccountScreen(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = user?.phone ?: "+91 98765 43210",
-                                style = MaterialTheme.typography.bodySmall.copy(color = LightTextMuted, fontSize = 11.sp)
+                                text = "Tap photo to change avatar",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = EmeraldPrimary,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
                             )
                         }
 
                         Surface(
                             shape = PillShape,
-                            color = OrangeLight
+                            color = EmeraldLight
                         ) {
                             Text(
                                 text = user?.role?.name ?: "TRADER",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = OrangePrimary
+                                    color = EmeraldDark
                                 ),
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                             )
@@ -132,6 +169,7 @@ fun TraderAccountScreen(
                 }
                 Spacer(modifier = Modifier.height(20.dp))
             }
+
 
             // Financial & Portfolio Group
             item {
@@ -340,7 +378,99 @@ fun TraderAccountScreen(
             }
         )
     }
+
+    // Change Profile Picture Dialog
+    if (showAvatarDialog) {
+        val avatarPresets = listOf("🐂", "🐻", "🦅", "💎", "🚀", "👑", "📈", "⚡")
+        AlertDialog(
+            onDismissRequest = { showAvatarDialog = false },
+            title = { Text("Choose Profile Avatar", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text(
+                        text = "Select a trading avatar or enter custom name/emoji:",
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        avatarPresets.take(4).forEach { emoji ->
+                            Surface(
+                                shape = CircleShape,
+                                color = if (user?.avatarUrl == emoji) EmeraldLight else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                border = if (user?.avatarUrl == emoji) androidx.compose.foundation.BorderStroke(2.dp, EmeraldPrimary) else null,
+                                modifier = Modifier
+                                    .size(52.dp)
+                                    .clickable {
+                                        val updated = user?.copy(avatarUrl = emoji)
+                                        if (updated != null) sessionManager.saveUser(updated)
+                                        showAvatarDialog = false
+                                    }
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(text = emoji, fontSize = 24.sp)
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        avatarPresets.drop(4).forEach { emoji ->
+                            Surface(
+                                shape = CircleShape,
+                                color = if (user?.avatarUrl == emoji) EmeraldLight else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                border = if (user?.avatarUrl == emoji) androidx.compose.foundation.BorderStroke(2.dp, EmeraldPrimary) else null,
+                                modifier = Modifier
+                                    .size(52.dp)
+                                    .clickable {
+                                        val updated = user?.copy(avatarUrl = emoji)
+                                        if (updated != null) sessionManager.saveUser(updated)
+                                        showAvatarDialog = false
+                                    }
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(text = emoji, fontSize = 24.sp)
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TradeNovTextField(
+                        value = customAvatarInput,
+                        onValueChange = { customAvatarInput = it },
+                        placeholder = "Or type custom text / URL...",
+                        label = "Custom Avatar"
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (customAvatarInput.isNotBlank()) {
+                            val updated = user?.copy(avatarUrl = customAvatarInput.trim())
+                            if (updated != null) sessionManager.saveUser(updated)
+                        }
+                        showAvatarDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
+                ) {
+                    Text("Save Avatar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAvatarDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
+
 
 @Composable
 fun AccountMenuItem(

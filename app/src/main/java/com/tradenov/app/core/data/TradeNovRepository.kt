@@ -496,11 +496,172 @@ class TradeNovRepository(
         _notifications.value = _notifications.value.map { it.copy(isRead = true) }
     }
 
-    // Initial Deterministic High-Fidelity Data
+    fun formatDateTimeWithSeconds(date: Date = Date()): String {
+        val sdf = SimpleDateFormat("dd/MM/yyyy, hh:mm:ss a 'IST'", Locale.ENGLISH)
+        return sdf.format(date)
+    }
+
+    private fun formatIsoToDateTimeWithSeconds(isoString: String?): String {
+        if (isoString.isNullOrBlank()) return formatDateTimeWithSeconds()
+        return try {
+            val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
+            val date = isoFormat.parse(isoString.take(19)) ?: Date()
+            formatDateTimeWithSeconds(date)
+        } catch (_: Exception) {
+            isoString
+        }
+    }
+
+    suspend fun fetchLiveTipsFromServer(status: String? = null, segment: String? = null): Result<List<Tip>> {
+        try {
+            val response = apiService.getSignals(status = status, segment = segment, limit = 50)
+            if (response.isSuccessful && response.body() != null) {
+                val data = response.body()!!
+                if (data.signals.isNotEmpty()) {
+                    val serverTips = data.signals.map { dto ->
+                        val marketSegment = when (dto.segment?.uppercase()) {
+                            "OPTIONS_INDEX" -> MarketSegment.OPTIONS_INDEX
+                            "OPTIONS_STOCKS" -> MarketSegment.OPTIONS_STOCKS
+                            "COMMODITIES" -> MarketSegment.COMMODITIES
+                            "FOREX" -> MarketSegment.FOREX
+                            "CRYPTO" -> MarketSegment.CRYPTO
+                            else -> MarketSegment.STOCKS
+                        }
+                        val tradeType = when (dto.tradeType?.uppercase()) {
+                            "INTRADAY" -> TradeType.INTRADAY
+                            "DELIVERY" -> TradeType.DELIVERY
+                            "POSITIONAL" -> TradeType.POSITIONAL
+                            else -> TradeType.SWING
+                        }
+                        val tipStatus = when (dto.status.uppercase()) {
+                            "ACTIVE", "RUNNING" -> TipStatus.RUNNING
+                            "TARGET_1_HIT", "TARGET_2_HIT", "TARGET_3_HIT" -> TipStatus.TARGET_HIT
+                            "STOP_LOSS_HIT" -> TipStatus.STOP_LOSS_HIT
+                            else -> TipStatus.CLOSED
+                        }
+                        val publishedFormatted = formatIsoToDateTimeWithSeconds(dto.publishedAt)
+                        val t1 = dto.targets?.firstOrNull()?.targetPrice ?: ((dto.entryPriceMin ?: 100.0) * 1.05)
+                        val t2 = dto.targets?.getOrNull(1)?.targetPrice ?: (t1 * 1.05)
+                        val t3 = dto.targets?.getOrNull(2)?.targetPrice ?: (t2 * 1.05)
+
+                        Tip(
+                            id = dto.id,
+                            symbol = dto.symbol,
+                            signalName = dto.signalName ?: "${dto.symbol} ${dto.tradeType ?: "Swing"}",
+                            marketSegment = marketSegment,
+                            action = TradeAction.BUY,
+                            tradeType = tradeType,
+                            entryRangeMin = dto.entryPriceMin ?: 100.0,
+                            entryRangeMax = dto.entryPriceMax ?: (dto.entryPriceMin ?: 100.0),
+                            capturedEntryPrice = dto.entryPriceMin ?: 100.0,
+                            currentMarketPrice = dto.exitPrice ?: (dto.entryPriceMin ?: 100.0),
+                            target1 = t1,
+                            target2 = t2,
+                            target3 = t3,
+                            stopLoss = dto.stopLoss ?: ((dto.entryPriceMin ?: 100.0) * 0.95),
+                            basePrice = dto.basePrice,
+                            status = tipStatus,
+                            isUnlocked = dto.isPurchased,
+                            expertId = dto.expertSlug ?: "exp_desk",
+                            expertName = dto.expertName ?: "Verified Expert",
+                            createdAt = publishedFormatted
+                        )
+                    }
+                    val serverIds = serverTips.map { it.id }.toSet()
+                    val existing = _tips.value.filter { it.id !in serverIds }
+                    _tips.value = serverTips + existing
+                    return Result.success(serverTips)
+                }
+            }
+        } catch (_: Exception) {
+            // Retain high-fidelity state when offline or backend unreachable
+        }
+        return Result.success(_tips.value)
+    }
+
+    // Initial Deterministic High-Fidelity Data (Matching Screenshots Exactly)
     private fun initialTips(): List<Tip> {
         return listOf(
             Tip(
-                id = "tip_001",
+                id = "tip_001_tata",
+                symbol = "TATASTEEL",
+                signalName = "[STOCK] TATASTEEL Cash Swing Breakout",
+                marketSegment = MarketSegment.STOCKS,
+                action = TradeAction.BUY,
+                tradeType = TradeType.SWING,
+                entryRangeMin = 158.5,
+                entryRangeMax = 159.2,
+                capturedEntryPrice = 158.5,
+                currentMarketPrice = 161.4,
+                target1 = 164.4,
+                target2 = 172.0,
+                target3 = 180.0,
+                stopLoss = 154.5,
+                riskLevel = "MODERATE",
+                timeHorizon = "3-5 Trading Days",
+                notes = "TATASTEEL setup confirmed with technical trend and price action confluence.",
+                basePrice = 99.0,
+                status = TipStatus.RUNNING,
+                isUnlocked = false,
+                expertId = "exp_rajesh",
+                expertName = "Rajesh Sharma",
+                expertRating = 4.9,
+                createdAt = "15/10/2026, 10:16:25 pm IST"
+            ),
+            Tip(
+                id = "tip_002_tata_sanjeev",
+                symbol = "TATASTEEL",
+                signalName = "TATASTEEL Positional Delivery Setup",
+                marketSegment = MarketSegment.STOCKS,
+                action = TradeAction.BUY,
+                tradeType = TradeType.DELIVERY,
+                entryRangeMin = 172.0,
+                entryRangeMax = 174.0,
+                capturedEntryPrice = 172.0,
+                currentMarketPrice = 176.8,
+                target1 = 184.9,
+                target2 = 192.0,
+                target3 = 200.0,
+                stopLoss = 167.7,
+                riskLevel = "LOW",
+                timeHorizon = "2-4 Weeks",
+                notes = "TATASTEEL setup confirmed with technical trend and price action confluence.",
+                basePrice = 499.0,
+                status = TipStatus.RUNNING,
+                isUnlocked = false,
+                expertId = "exp_sanjeev",
+                expertName = "Sanjeev Kumar",
+                expertRating = 4.8,
+                createdAt = "13/10/2026, 08:37:26 am IST"
+            ),
+            Tip(
+                id = "tip_003_sbin",
+                symbol = "SBIN",
+                signalName = "State Bank Of India PSU Momentum",
+                marketSegment = MarketSegment.STOCKS,
+                action = TradeAction.BUY,
+                tradeType = TradeType.SWING,
+                entryRangeMin = 941.0,
+                entryRangeMax = 945.0,
+                capturedEntryPrice = 941.0,
+                currentMarketPrice = 975.0,
+                target1 = 1011.6,
+                target2 = 1045.0,
+                target3 = 1080.0,
+                stopLoss = 917.5,
+                riskLevel = "MODERATE",
+                timeHorizon = "1-2 Weeks",
+                notes = "SBIN setup confirmed with technical trend and price action confluence.",
+                basePrice = 499.0,
+                status = TipStatus.RUNNING,
+                isUnlocked = false,
+                expertId = "exp_rajesh",
+                expertName = "Rajesh Sharma",
+                expertRating = 4.9,
+                createdAt = "13/10/2026, 07:59:47 am IST"
+            ),
+            Tip(
+                id = "tip_004_nifty",
                 symbol = "NIFTY 24500 CE",
                 signalName = "NIFTY 24500 CE Expiry Special",
                 marketSegment = MarketSegment.OPTIONS_INDEX,
@@ -523,15 +684,15 @@ class TradeNovRepository(
                 expertId = "exp_001",
                 expertName = "Kunal Sharma (Technical Analyst)",
                 expertRating = 4.9,
-                createdAt = "Today, 09:25 AM",
+                createdAt = "16/10/2026, 09:25:40 am IST",
                 timeline = listOf(
-                    TipTimelineStep("Tip Published", 138.5, "09:25 AM", "Strict SL 115"),
-                    TipTimelineStep("Entry Triggered", 140.0, "09:28 AM", "Volume surge confirmed"),
-                    TipTimelineStep("Target 1 Achieved (160)", 162.0, "10:15 AM", "Book 50% profits, trail SL to cost")
+                    TipTimelineStep("Tip Published", 138.5, "09:25:40 am IST", "Strict SL 115"),
+                    TipTimelineStep("Entry Triggered", 140.0, "09:28:15 am IST", "Volume surge confirmed"),
+                    TipTimelineStep("Target 1 Achieved (160)", 162.0, "10:15:30 am IST", "Book 50% profits, trail SL to cost")
                 )
             ),
             Tip(
-                id = "tip_002",
+                id = "tip_005_ril",
                 symbol = "RELIANCE",
                 signalName = "Reliance Industries Positional Breakout",
                 marketSegment = MarketSegment.STOCKS,
@@ -554,36 +715,10 @@ class TradeNovRepository(
                 expertId = "exp_002",
                 expertName = "Pooja Mehta (CMT)",
                 expertRating = 4.8,
-                createdAt = "Yesterday, 02:40 PM"
+                createdAt = "15/10/2026, 02:40:15 pm IST"
             ),
             Tip(
-                id = "tip_003",
-                symbol = "BANKNIFTY 51200 PE",
-                signalName = "BankNifty Weekly Put Option",
-                marketSegment = MarketSegment.OPTIONS_INDEX,
-                action = TradeAction.BUY,
-                tradeType = TradeType.INTRADAY,
-                entryRangeMin = 280.0,
-                entryRangeMax = 295.0,
-                capturedEntryPrice = 288.0,
-                currentMarketPrice = 345.0,
-                target1 = 340.0,
-                target2 = 390.0,
-                target3 = 440.0,
-                stopLoss = 230.0,
-                riskLevel = "HIGH",
-                timeHorizon = "INTRADAY",
-                notes = "Banking index facing multiple resistance at 51500. PSU bank weakness confirming reversal.",
-                basePrice = 99.0,
-                status = TipStatus.TARGET_HIT,
-                isUnlocked = false,
-                expertId = "exp_001",
-                expertName = "Kunal Sharma (Technical Analyst)",
-                expertRating = 4.9,
-                createdAt = "Today, 11:10 AM"
-            ),
-            Tip(
-                id = "tip_004",
+                id = "tip_006_gold",
                 symbol = "GOLD 05DEC",
                 signalName = "MCX Gold Mini Swing Bullish",
                 marketSegment = MarketSegment.COMMODITIES,
@@ -606,10 +741,36 @@ class TradeNovRepository(
                 expertId = "exp_003",
                 expertName = "Vikramaditya Rao",
                 expertRating = 4.9,
-                createdAt = "12 Oct, 05:00 PM"
+                createdAt = "12/10/2026, 05:00:22 pm IST"
             ),
             Tip(
-                id = "tip_005",
+                id = "tip_007_banknifty_closed",
+                symbol = "BANKNIFTY 51200 PE",
+                signalName = "BankNifty Weekly Put Option",
+                marketSegment = MarketSegment.OPTIONS_INDEX,
+                action = TradeAction.BUY,
+                tradeType = TradeType.INTRADAY,
+                entryRangeMin = 280.0,
+                entryRangeMax = 295.0,
+                capturedEntryPrice = 288.0,
+                currentMarketPrice = 345.0,
+                target1 = 340.0,
+                target2 = 390.0,
+                target3 = 440.0,
+                stopLoss = 230.0,
+                riskLevel = "HIGH",
+                timeHorizon = "INTRADAY",
+                notes = "Banking index facing multiple resistance at 51500. Target achieved and closed.",
+                basePrice = 99.0,
+                status = TipStatus.TARGET_HIT,
+                isUnlocked = true,
+                expertId = "exp_001",
+                expertName = "Kunal Sharma (Technical Analyst)",
+                expertRating = 4.9,
+                createdAt = "14/10/2026, 11:10:15 am IST"
+            ),
+            Tip(
+                id = "tip_008_btc",
                 symbol = "BTCUSDT",
                 signalName = "Bitcoin Futures Momentum Setup",
                 marketSegment = MarketSegment.CRYPTO,
@@ -632,10 +793,11 @@ class TradeNovRepository(
                 expertId = "exp_004",
                 expertName = "CryptoWhale Desk",
                 expertRating = 4.7,
-                createdAt = "11 Oct, 08:30 PM"
+                createdAt = "11/10/2026, 08:30:12 pm IST"
             )
         )
     }
+
 
     private fun initialExperts(): List<Expert> {
         val kunalPlans = listOf(

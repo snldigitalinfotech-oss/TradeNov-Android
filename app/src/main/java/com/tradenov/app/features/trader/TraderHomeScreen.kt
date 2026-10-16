@@ -114,14 +114,21 @@ fun TraderHomeScreen(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         if (!user?.avatarUrl.isNullOrBlank()) {
-                                            AsyncImage(
-                                                model = user!!.avatarUrl,
-                                                contentDescription = "Trader Profile",
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .clip(CircleShape),
-                                                contentScale = ContentScale.Crop
-                                            )
+                                            if (user!!.avatarUrl!!.startsWith("http")) {
+                                                AsyncImage(
+                                                    model = user!!.avatarUrl,
+                                                    contentDescription = "Trader Profile",
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .clip(CircleShape),
+                                                    contentScale = ContentScale.Crop
+                                                )
+                                            } else {
+                                                Text(
+                                                    text = user!!.avatarUrl!!,
+                                                    style = MaterialTheme.typography.titleLarge
+                                                )
+                                            }
                                         } else {
                                             val initials = remember(user?.name) {
                                                 user?.name?.trim()?.split("\\s+".toRegex())

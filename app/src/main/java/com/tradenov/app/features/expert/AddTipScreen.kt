@@ -25,6 +25,7 @@ import com.tradenov.app.core.designsystem.*
 import com.tradenov.app.core.model.*
 import kotlinx.coroutines.launch
 import java.util.UUID
+import java.util.Date
 
 @Composable
 fun AddTipScreen(
@@ -512,9 +513,9 @@ fun AddTipScreen(
                             expertId = "exp_001",
                             expertName = "Kunal Sharma (Technical Analyst)",
                             expertRating = 4.9,
-                            createdAt = "Just now",
+                            createdAt = repository.formatDateTimeWithSeconds(Date()),
                             timeline = listOf(
-                                TipTimelineStep("Tip Published", (eMin + eMax) / 2, "Just now", notes)
+                                TipTimelineStep("Tip Published", (eMin + eMax) / 2, repository.formatDateTimeWithSeconds(Date()), notes)
                             )
                         )
 

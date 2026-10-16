@@ -29,6 +29,11 @@ import com.tradenov.app.core.model.TipStatus
 import com.tradenov.app.core.model.TradeAction
 import kotlinx.coroutines.launch
 
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+
 @Composable
 fun TipsMarketplaceScreen(
     repository: TradeNovRepository,
@@ -39,19 +44,25 @@ fun TipsMarketplaceScreen(
     val tips by repository.tips.collectAsState()
     val wallet by repository.wallet.collectAsState()
 
-    var selectedTab by remember { mutableStateOf(0) } // 0: Live Setups, 1: Subscribed, 2: Purchased, 3: Performance
+    var selectedTab by remember { mutableStateOf(0) } // 0: All Marketplace Tips, 1: Subscribed, 2: Purchased, 3: Performance
     var selectedSegment by remember { mutableStateOf(MarketSegment.ALL) }
     var searchQuery by remember { mutableStateOf("") }
     var tipToUnlock by remember { mutableStateOf<Tip?>(null) }
     var unlockedSuccessTip by remember { mutableStateOf<Tip?>(null) }
+    var isSyncing by remember { mutableStateOf(false) }
+
+    // Fetch live tips from server on mount
+    LaunchedEffect(Unit) {
+        repository.fetchLiveTipsFromServer()
+    }
 
     val filteredTips = remember(tips, selectedTab, selectedSegment, searchQuery) {
         tips.filter { tip ->
             val matchesTab = when (selectedTab) {
-                0 -> tip.status == TipStatus.RUNNING
+                0 -> tip.status == TipStatus.RUNNING // Active live setups only; closed tips automatically disappear!
                 1 -> tip.isUnlocked && tip.expertName.contains("Kunal", true)
                 2 -> tip.isUnlocked
-                3 -> tip.status != TipStatus.RUNNING
+                3 -> tip.status != TipStatus.RUNNING // Closed & target-achieved setups
                 else -> true
             }
             val matchesSegment = selectedSegment == MarketSegment.ALL || tip.marketSegment == selectedSegment
@@ -76,27 +87,82 @@ fun TipsMarketplaceScreen(
                     .background(MaterialTheme.colorScheme.surface)
                     .padding(top = 16.dp, start = 20.dp, end = 20.dp, bottom = 4.dp)
             ) {
-                Text(
-                    text = "Tips Marketplace",
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Trading Tips & Calls",
+                                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            // Live green pulse badge
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFFECFDF5)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFF10B981))
+                                )
+                            }
+                        }
+                        Text(
+                            text = "Live verified trade setups with audited entry & targets",
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        )
+                    }
+
+                    // Live server sync button
+                    IconButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                isSyncing = true
+                                repository.fetchLiveTipsFromServer()
+                                kotlinx.coroutines.delay(600)
+                                isSyncing = false
+                            }
+                        }
+                    ) {
+                        if (isSyncing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = EmeraldPrimary
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Sync Live Server",
+                                tint = EmeraldPrimary
+                            )
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Search Bar
                 TradeNovTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = "Search by symbol (e.g. RELIANCE, NIFTY)...",
+                    placeholder = "Search by symbol (e.g. TATASTEEL, SBIN, RELIANCE)...",
                     leadingIcon = Icons.Outlined.Search
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Scrollable Tabs: Live Setups | Subscribed | Purchased | Performance
+                // Scrollable Tabs: All Marketplace Tips | Subscriptions | Purchased | Performance & Closed
                 ScrollableTabRow(
                     selectedTabIndex = selectedTab,
                     containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = OrangePrimary,
+                    contentColor = EmeraldPrimary,
                     edgePadding = 0.dp
                 ) {
                     Tab(
@@ -104,7 +170,7 @@ fun TipsMarketplaceScreen(
                         onClick = { selectedTab = 0 },
                         text = {
                             Text(
-                                "Live Setups ($runningCount)",
+                                "All Marketplace Tips ($runningCount)",
                                 fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = 13.sp
                             )
@@ -115,7 +181,7 @@ fun TipsMarketplaceScreen(
                         onClick = { selectedTab = 1 },
                         text = {
                             Text(
-                                "Subscribed ($subscribedCount)",
+                                "From My Subscriptions ($subscribedCount)",
                                 fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = 13.sp
                             )
@@ -126,7 +192,7 @@ fun TipsMarketplaceScreen(
                         onClick = { selectedTab = 2 },
                         text = {
                             Text(
-                                "Purchased ($purchasedCount)",
+                                "My Purchased Tips ($purchasedCount)",
                                 fontWeight = if (selectedTab == 2) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = 13.sp
                             )
@@ -147,16 +213,19 @@ fun TipsMarketplaceScreen(
             }
         }
     ) { padding ->
-        LazyColumn(
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 340.dp),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(top = 12.dp, bottom = 24.dp)
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 28.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Market Filter Chips
-            item {
+            // Market Filter Chips (Span all columns)
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 LazyRow(
-                    contentPadding = PaddingValues(horizontal = 20.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(MarketSegment.values()) { segment ->
@@ -167,11 +236,10 @@ fun TipsMarketplaceScreen(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(14.dp))
             }
 
             if (filteredTips.isEmpty()) {
-                item {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     val emptyTitle = when (selectedTab) {
                         0 -> "No Live Active Setups"
                         1 -> "No Subscribed Setups Yet"
@@ -194,17 +262,17 @@ fun TipsMarketplaceScreen(
                 }
             } else {
                 if (selectedTab == 3) {
-                    // Performance Tab: Closed Trades with Entry, Exit, Outcome, and Rupee P&L + Pct
-                    items(filteredTips) { tip ->
+                    // Performance Tab: Closed Trades
+                    items(filteredTips, key = { it.id }) { tip ->
                         PerformanceTradeCard(
                             tip = tip,
                             onClick = { onNavigateTipDetail(tip.id) },
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 } else {
-                    // Live, Subscribed, or Purchased Tabs
-                    items(filteredTips) { tip ->
+                    // Live, Subscribed, or Purchased Tabs in Grid format
+                    items(filteredTips, key = { it.id }) { tip ->
                         TipListingCard(
                             tip = tip,
                             onClick = {
@@ -214,13 +282,14 @@ fun TipsMarketplaceScreen(
                                     tipToUnlock = tip
                                 }
                             },
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
             }
         }
     }
+
 
     // Purchase Confirmation Modal (with Coupon Code input and Wallet check)
     if (tipToUnlock != null) {

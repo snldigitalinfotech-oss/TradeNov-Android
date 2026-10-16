@@ -154,7 +154,63 @@ interface TradeNovApiService {
 
     @POST("wallet/withdraw")
     suspend fun requestWithdrawal(@Body req: WithdrawalRequestDto): Response<ApiResponse<Any>>
+
+    @GET("signals")
+    suspend fun getSignals(
+        @Query("status") status: String? = null,
+        @Query("segment") segment: String? = null,
+        @Query("page") page: Int? = 1,
+        @Query("limit") limit: Int? = 50
+    ): Response<SignalsResponseData>
+
+    @POST("signals/{id}/actions")
+    suspend fun updateSignalAction(
+        @Path("id") signalId: String,
+        @Body req: SignalActionRequestDto
+    ): Response<ApiResponse<Any>>
 }
+
+data class SignalTargetDto(
+    val targetNumber: Int = 1,
+    val targetPrice: Double = 0.0,
+    val status: String? = null
+)
+
+data class SignalDto(
+    val id: String,
+    val signalName: String? = null,
+    val slug: String? = null,
+    val expertName: String? = "Verified Expert",
+    val expertAvatar: String? = null,
+    val expertSlug: String? = null,
+    val segment: String? = "STOCKS",
+    val tradeType: String? = "SWING",
+    val duration: String? = null,
+    val instrument: String? = null,
+    val symbol: String,
+    val exchange: String? = "NSE",
+    val lotSize: Int? = 1,
+    val entryPriceMin: Double? = 0.0,
+    val entryPriceMax: Double? = 0.0,
+    val stopLoss: Double? = null,
+    val exitPrice: Double? = null,
+    val realizedPnlPct: Double? = null,
+    val basePrice: Double = 99.0,
+    val isPromoted: Boolean = false,
+    val status: String = "ACTIVE",
+    val result: String? = null,
+    val publishedAt: String? = null,
+    val isPurchased: Boolean = false,
+    val targets: List<SignalTargetDto>? = emptyList()
+)
+
+data class SignalsResponseData(
+    val signals: List<SignalDto> = emptyList(),
+    val total: Int = 0,
+    val page: Int = 1,
+    val limit: Int = 50
+)
+
 
 object ApiClient {
     // 10.0.2.2 points to host machine from Android Emulator; localhost:4000 on physical machine / preview

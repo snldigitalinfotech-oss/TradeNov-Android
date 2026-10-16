@@ -123,7 +123,60 @@ data class Tip(
             val pctPrefix = if (pct >= 0) "+" else ""
             return "${prefix}${String.format("%,.0f", absAmt)} (${pctPrefix}${String.format("%.1f", pct)}%)"
         }
+
+    val companyName: String
+        get() = when (symbol.uppercase()) {
+            "TATASTEEL" -> "Tata Steel Ltd."
+            "SBIN" -> "State Bank Of India"
+            "RELIANCE" -> "Reliance Industries Ltd."
+            "INFY" -> "Infosys Limited"
+            "TCS" -> "Tata Consultancy Services"
+            "HDFCBANK" -> "HDFC Bank Limited"
+            "ICICIBANK" -> "ICICI Bank Limited"
+            "GOLD", "GOLD 05DEC" -> "MCX Gold Futures"
+            "SILVER" -> "MCX Silver Futures"
+            "CRUDEOIL" -> "MCX Crude Oil"
+            "BTCUSDT" -> "Bitcoin / USDT Crypto"
+            "NIFTY 24500 CE", "NIFTY 50" -> "NSE Nifty 50 Index"
+            "BANKNIFTY 51200 PE" -> "NSE Bank Nifty Index"
+            else -> if (symbol.contains("NIFTY")) "Nifty Index Options" else "$symbol Ltd."
+        }
+
+    val monogram: String
+        get() = when {
+            symbol.startsWith("TATA") -> "TATA"
+            symbol.startsWith("SBIN") -> "SBIN"
+            symbol.startsWith("RELIANCE") -> "RIL"
+            symbol.startsWith("INFY") -> "INFY"
+            symbol.startsWith("HDFC") -> "HDFC"
+            symbol.startsWith("ICICI") -> "ICICI"
+            symbol.startsWith("NIFTY") -> "NSE"
+            symbol.startsWith("BANK") -> "BNF"
+            symbol.startsWith("GOLD") -> "GOLD"
+            symbol.startsWith("BTC") -> "BTC"
+            else -> symbol.take(4).uppercase()
+        }
+
+    val riskRewardRatio: String
+        get() {
+            val risk = Math.abs(capturedEntryPrice - stopLoss)
+            val reward = Math.abs(target1 - capturedEntryPrice)
+            if (risk > 0 && reward > 0) {
+                val ratio = reward / risk
+                return "1:${String.format("%.1f", ratio)}"
+            }
+            return "1:1.7"
+        }
+
+    val exchangeBadge: String
+        get() = when (marketSegment) {
+            MarketSegment.COMMODITIES -> "MCX"
+            MarketSegment.CRYPTO -> "CRYPTO"
+            MarketSegment.FOREX -> "FOREX"
+            else -> "NSE"
+        }
 }
+
 
 data class SubscriptionPlan(
     val id: String,
